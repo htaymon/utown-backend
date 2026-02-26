@@ -1,44 +1,45 @@
 package com.utown.utown_backend.controller;
 
-import com.utown.utown_backend.dto.RestaurantDTO;
-import com.utown.utown_backend.entity.Restaurant;
+import com.utown.utown_backend.dto.request.RestaurantRequestDTO;
+import com.utown.utown_backend.dto.response.RestaurantResponseDTO;
 import com.utown.utown_backend.service.RestaurantService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/restaurants")
+@RequiredArgsConstructor
 public class RestaurantController {
 
     private final RestaurantService service;
 
-    public RestaurantController(RestaurantService service) {
-        this.service = service;
+    @PostMapping
+    public ResponseEntity<RestaurantResponseDTO> create(@RequestBody RestaurantRequestDTO dto) {
+        return ResponseEntity.ok(service.create(dto));
     }
 
     @GetMapping
-    public List<Restaurant> getAllRestaurants() {
-        return service.getAllRestaurants();
+    public ResponseEntity<List<RestaurantResponseDTO>> getAll() {
+        return ResponseEntity.ok(service.getAll());
     }
 
     @GetMapping("/{id}")
-    public Restaurant getRestaurantById(@PathVariable Long id) {
-        return service.getRestaurantById(id);
-    }
-
-    @PostMapping
-    public Restaurant createRestaurant(@RequestBody RestaurantDTO dto) {
-        return service.createRestaurant(dto);
+    public RestaurantResponseDTO getById(@PathVariable Long id) {
+        return service.getById(id);
     }
 
     @PutMapping("/{id}")
-    public Restaurant updateRestaurant(@PathVariable Long id, @RequestBody RestaurantDTO dto) {
-        return service.updateRestaurant(id, dto);
+    public RestaurantResponseDTO update(@PathVariable Long id, @RequestBody RestaurantRequestDTO dto) {
+        return service.update(id, dto);
     }
 
     @DeleteMapping("/{id}")
-    public void deleteRestaurant(@PathVariable Long id) {
-        service.deleteRestaurant(id);
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable Long id) {
+        service.delete(id);
     }
 }

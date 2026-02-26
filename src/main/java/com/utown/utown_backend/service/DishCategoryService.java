@@ -1,46 +1,56 @@
 package com.utown.utown_backend.service;
 
-import com.utown.utown_backend.dto.DishCategoryDTO;
+import com.utown.utown_backend.dto.request.DishCategoryRequestDTO;
+import com.utown.utown_backend.dto.response.DishCategoryResponseDTO;
 import com.utown.utown_backend.entity.DishCategory;
+import com.utown.utown_backend.mapper.DishCategoryMapper;
 import com.utown.utown_backend.repository.DishCategoryRepository;
+import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class DishCategoryService {
 
     private final DishCategoryRepository repository;
+    private final DishCategoryMapper mapper;
 
-    public DishCategoryService(DishCategoryRepository repository) {
-        this.repository = repository;
+    public DishCategoryResponseDTO create(DishCategoryRequestDTO dto) {
+        DishCategory entity = mapper.toEntity(dto);
+        repository.save(entity);
+        return mapper.toResponseDTO(entity);
     }
 
-    public List<DishCategory> getAllCategories() {
-        return repository.findAll();
+    public List<DishCategoryResponseDTO> getAll() {
+        return mapper.toResponseList(repository.findAll());
     }
 
-    public DishCategory getCategoryById(Long id) {
-        return repository.findById(id).orElse(null);
+    public DishCategoryResponseDTO getById(Long id) {
+        DishCategory entity = repository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("DishCategory not found"));
+        return mapper.toResponseDTO(entity);
     }
 
-    public DishCategory createCategory(DishCategoryDTO dto) {
-        DishCategory category = new DishCategory(dto.getDishCategoryName(), dto.getImageUrl(), dto.getPriority());
-        return repository.save(category);
+    public DishCategoryResponseDTO update(Long id, DishCategoryRequestDTO dto) {
+
+        DishCategory entity = repository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("DishCategory not found"));
+
+        entity.setName(dto.getName());
+        entity.setImageUrl(dto.getImageUrl());
+        entity.setPriority(dto.getPriority());
+
+        repository.save(entity);
+
+        return mapper.toResponseDTO(entity);
     }
 
-    public DishCategory updateCategory(Long id, DishCategoryDTO dto) {
-        DishCategory category = repository.findById(id).orElse(null);
-        if (category != null) {
-            category.setDishCategoryName(dto.getDishCategoryName());
-            category.setImageUrl(dto.getImageUrl());
-            category.setPriority(dto.getPriority());
-            return repository.save(category);
-        }
-        return null;
-    }
-
-    public void deleteCategory(Long id) {
-        repository.deleteById(id);
+    public void delete(Long id) {
+        DishCategory entity = repository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("DishCategory not found"));
+        repository.delete(entity);
     }
 }

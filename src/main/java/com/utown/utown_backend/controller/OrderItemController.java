@@ -1,43 +1,43 @@
 package com.utown.utown_backend.controller;
 
-import com.utown.utown_backend.dto.OrderItemDTO;
+import com.utown.utown_backend.dto.OrderItemRequestDTO;
+import com.utown.utown_backend.dto.response.OrderItemResponseDTO;
 import com.utown.utown_backend.service.OrderItemService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/order-items")
+@RequiredArgsConstructor
 public class OrderItemController {
 
     private final OrderItemService service;
 
-    public OrderItemController(OrderItemService service) {
-        this.service = service;
-    }
-
-    @GetMapping
-    public List<OrderItemDTO> getAll() {
-        return service.getAllOrderItems();
+    @PostMapping
+    public OrderItemResponseDTO create(@RequestBody OrderItemRequestDTO dto) {
+        return service.create(dto);
     }
 
     @GetMapping("/{id}")
-    public OrderItemDTO getById(@PathVariable Long id) {
-        return service.getOrderItemById(id);
+    public OrderItemResponseDTO getById(@PathVariable Long id) {
+        return service.getById(id);
     }
 
-    @PostMapping
-    public OrderItemDTO create(@RequestBody OrderItemDTO dto) {
-        return service.createOrderItem(dto);
+    @GetMapping
+    public List<OrderItemResponseDTO> getAll() {
+        return service.getAll();
     }
 
     @PutMapping("/{id}")
-    public OrderItemDTO update(@PathVariable Long id, @RequestBody OrderItemDTO dto) {
-        return service.updateOrderItem(id, dto);
+    public OrderItemResponseDTO update(@PathVariable Long id,
+                                       @RequestBody OrderItemRequestDTO dto) {
+        return service.update(id, dto);
     }
 
     @DeleteMapping("/{id}")
     public void delete(@PathVariable Long id) {
-        service.deleteOrderItem(id);
+        service.delete(id);
     }
 }

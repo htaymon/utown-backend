@@ -1,43 +1,47 @@
 package com.utown.utown_backend.controller;
 
-import com.utown.utown_backend.dto.OrderItemOptionDTO;
+import com.utown.utown_backend.dto.request.OrderItemOptionRequestDTO;
+import com.utown.utown_backend.dto.response.OrderItemOptionResponseDTO;
 import com.utown.utown_backend.service.OrderItemOptionService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/order-item-options")
+@RequiredArgsConstructor
 public class OrderItemOptionController {
 
     private final OrderItemOptionService service;
 
-    public OrderItemOptionController(OrderItemOptionService service) {
-        this.service = service;
+    @PostMapping
+    public ResponseEntity<OrderItemOptionResponseDTO> create(
+            @RequestBody OrderItemOptionRequestDTO dto) {
+        return ResponseEntity.ok(service.create(dto));
     }
 
     @GetMapping
-    public List<OrderItemOptionDTO> getAll() {
-        return service.getAllOrderItemOptions();
+    public ResponseEntity<List<OrderItemOptionResponseDTO>> getAll() {
+        return ResponseEntity.ok(service.getAll());
     }
 
     @GetMapping("/{id}")
-    public OrderItemOptionDTO getById(@PathVariable Long id) {
-        return service.getOrderItemOptionById(id);
-    }
-
-    @PostMapping
-    public OrderItemOptionDTO create(@RequestBody OrderItemOptionDTO dto) {
-        return service.createOrderItemOption(dto);
+    public ResponseEntity<OrderItemOptionResponseDTO> getById(@PathVariable Long id) {
+        return ResponseEntity.ok(service.getById(id));
     }
 
     @PutMapping("/{id}")
-    public OrderItemOptionDTO update(@PathVariable Long id, @RequestBody OrderItemOptionDTO dto) {
-        return service.updateOrderItemOption(id, dto);
+    public ResponseEntity<OrderItemOptionResponseDTO> update(
+            @PathVariable Long id,
+            @RequestBody OrderItemOptionRequestDTO dto) {
+        return ResponseEntity.ok(service.update(id, dto));
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable Long id) {
-        service.deleteOrderItemOption(id);
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        service.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }

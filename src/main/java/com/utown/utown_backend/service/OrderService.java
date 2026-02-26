@@ -1,120 +1,82 @@
 package com.utown.utown_backend.service;
 
-import com.utown.utown_backend.dto.OrderDTO;
-import com.utown.utown_backend.dto.OrderItemDTO;
-import com.utown.utown_backend.dto.OrderItemOptionDTO;
+import com.utown.utown_backend.dto.OrderRequestDTO;
+import com.utown.utown_backend.dto.response.OrderResponseDTO;
+import com.utown.utown_backend.entity.Address;
 import com.utown.utown_backend.entity.Order;
-import com.utown.utown_backend.entity.User;
 import com.utown.utown_backend.entity.Restaurant;
+import com.utown.utown_backend.entity.User;
+import com.utown.utown_backend.mapper.OrderMapper;
+import com.utown.utown_backend.repository.AddressRepository;
 import com.utown.utown_backend.repository.OrderRepository;
-import com.utown.utown_backend.repository.UserRepository;
 import com.utown.utown_backend.repository.RestaurantRepository;
+import com.utown.utown_backend.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import jakarta.persistence.EntityNotFoundException;
 
-import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class OrderService {
 
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
     private final RestaurantRepository restaurantRepository;
+    private final AddressRepository addressRepository;
+    private final OrderMapper mapper;
 
-    public OrderService(OrderRepository orderRepository,
-                        UserRepository userRepository,
-                        RestaurantRepository restaurantRepository) {
-        this.orderRepository = orderRepository;
-        this.userRepository = userRepository;
-        this.restaurantRepository = restaurantRepository;
+    public OrderResponseDTO create(OrderRequestDTO dto) {
+
+        User user = userRepository.findById(dto.getUserId())
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+
+        Restaurant restaurant = restaurantRepository.findById(dto.getRestaurantId())
+                .orElseThrow(() -> new EntityNotFoundException("Restaurant not found"));
+
+        Address address = addressRepository.findById(dto.getDeliveryAddressId())
+                .orElseThrow(() -> new EntityNotFoundException("Address not found"));
+
+        Order order = mapper.toEntity(dto);
+
+        order.setUser(user);
+        order.setRestaurant(restaurant);
+        order.setDeliveryAddress(address);
+        order.setOrderNo(UUID.randomUUID().toString());
+
+        return mapper.toResponseDTO(orderRepository.save(order));
     }
 
-    public List<OrderDTO> getAllOrders() {
+    public OrderResponseDTO getById(Long id) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Order not found"));
+
+        return mapper.toResponseDTO(order);
+    }
+
+    public List<OrderResponseDTO> getAll() {
         return orderRepository.findAll()
                 .stream()
-                .map(this::convertToDTO)
+                .map(mapper::toResponseDTO)
                 .collect(Collectors.toList());
     }
 
-    public OrderDTO getOrderById(Long id) {
-        return orderRepository.findById(id)
-                .map(this::convertToDTO)
-                .orElse(null);
+    public OrderResponseDTO update(Long id, OrderRequestDTO dto) {
+
+        Order existing = orderRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Order not found"));
+
+        existing.setStatus(dto.getStatus());
+        existing.setTotalPrice(dto.getTotalPrice());
+        existing.setCookingTime(dto.getCookingTime());
+
+        return mapper.toResponseDTO(orderRepository.save(existing));
     }
 
-    public OrderDTO createOrder(OrderDTO dto) {
-        User user = userRepository.findById(dto.getUserId()).orElse(null);
-        Restaurant restaurant = restaurantRepository.findById(dto.getRestaurantId()).orElse(null);
-
-        Order order = new Order(
-                user,
-                restaurant,
-                dto.getOrderNo(),
-                dto.getStatus(),
-                dto.getTotalPrice(),
-                dto.getCookingTime(),
-                LocalDateTime.now()
-        );
-
-        Order saved = orderRepository.save(order);
-        return convertToDTO(saved);
-    }
-
-    public OrderDTO updateOrder(Long id, OrderDTO dto) {
-        Order order = orderRepository.findById(id).orElse(null);
-        if (order != null) {
-            order.setStatus(dto.getStatus());
-            order.setTotalPrice(dto.getTotalPrice());
-            order.setCookingTime(dto.getCookingTime());
-            Order saved = orderRepository.save(order);
-            return convertToDTO(saved);
-        }
-        return null;
-    }
-
-    public void deleteOrder(Long id) {
+    public void delete(Long id) {
         orderRepository.deleteById(id);
-    }
-
-    private OrderDTO convertToDTO(Order order) {
-        OrderDTO dto = new OrderDTO();
-        dto.setOrderId(order.getOrderId());
-        dto.setUserId(order.getUser() != null ? order.getUser().getId() : null);
-        dto.setRestaurantId(order.getRestaurant() != null ? order.getRestaurant().getRestaurantId() : null);
-        dto.setOrderNo(order.getOrderNo());
-        dto.setStatus(order.getStatus());
-        dto.setTotalPrice(order.getTotalPrice());
-        dto.setCookingTime(order.getCookingTime());
-        dto.setCreatedAt(order.getCreatedAt());
-
-        if (order.getOrderItems() != null) {
-            dto.setOrderItems(order.getOrderItems()
-                    .stream()
-                    .map(item -> {
-                        OrderItemDTO itemDTO = new OrderItemDTO();
-                        itemDTO.setOrderItemId(item.getOrderItemId());
-                        itemDTO.setOrderId(order.getOrderId());
-                        itemDTO.setDishId(item.getDish() != null ? item.getDish().getDishId() : null);
-                        itemDTO.setQuantity(item.getQuantity());
-                        itemDTO.setPrice(item.getPrice());
-
-                        if (item.getOrderItemOptions() != null) {
-                            itemDTO.setOrderItemOptions(item.getOrderItemOptions()
-                                    .stream()
-                                    .map(opt -> {
-                                        OrderItemOptionDTO optDTO = new OrderItemOptionDTO();
-                                        optDTO.setOrderItemOptionId(opt.getOrderItemOptionId());
-                                        optDTO.setOrderItemId(item.getOrderItemId());
-                                        optDTO.setOptionId(opt.getOption() != null ? opt.getOption().getOptionId() : null);
-                                        return optDTO;
-                                    }).collect(Collectors.toList()));
-                        }
-
-                        return itemDTO;
-                    }).collect(Collectors.toList()));
-        }
-
-        return dto;
     }
 }

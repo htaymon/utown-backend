@@ -1,33 +1,46 @@
 package com.utown.utown_backend.controller;
 
-import com.utown.utown_backend.entity.Role;
+import com.utown.utown_backend.dto.request.RoleRequestDTO;
+import com.utown.utown_backend.dto.response.RoleResponseDTO;
 import com.utown.utown_backend.service.RoleService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/roles")
+@RequiredArgsConstructor
 public class RoleController {
 
-    private final RoleService roleService;
-
-    public RoleController(RoleService roleService) {
-        this.roleService = roleService;
-    }
+    private final RoleService service;
 
     @PostMapping
-    public Role create(@RequestBody Role role) {
-        return roleService.create(role);
+    public ResponseEntity<RoleResponseDTO> create(@RequestBody RoleRequestDTO dto) {
+        return ResponseEntity.ok(service.create(dto));
     }
 
     @GetMapping
-    public List<Role> getAll() {
-        return roleService.getAll();
+    public ResponseEntity<List<RoleResponseDTO>> getAll() {
+        return ResponseEntity.ok(service.getAll());
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<RoleResponseDTO> getById(@PathVariable Long id) {
+        return ResponseEntity.ok(service.getById(id));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<RoleResponseDTO> update(
+            @PathVariable Long id,
+            @RequestBody RoleRequestDTO dto) {
+        return ResponseEntity.ok(service.update(id, dto));
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable Long id) {
-        roleService.delete(id);
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        service.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }

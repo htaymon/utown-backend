@@ -1,84 +1,39 @@
 package com.utown.utown_backend.entity;
 
 import jakarta.persistence.*;
+import lombok.*;
+
 import java.util.List;
 
+@Setter
+@Getter
 @Entity
 @Table(name = "order_items")
-public class OrderItem {
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class OrderItem extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long orderItemId;
+    private Long id;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "order_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "order_id", nullable = false)
     private Order order;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "dish_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "dish_id", nullable = false)
     private Dish dish;
 
+    @Column(nullable = false)
     private Integer quantity;
+
+    @Column(nullable = false)
     private Double price;
 
-    @OneToMany(mappedBy = "orderItem", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "orderItem",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true)
     private List<OrderItemOption> orderItemOptions;
-
-    public OrderItem() {}
-
-    public OrderItem(Order order, Dish dish, Integer quantity, Double price) {
-        this.order = order;
-        this.dish = dish;
-        this.quantity = quantity;
-        this.price = price;
-    }
-
-    public Long getOrderItemId() {
-        return orderItemId;
-    }
-
-    public void setOrderItemId(Long orderItemId) {
-        this.orderItemId = orderItemId;
-    }
-
-    public Order getOrder() {
-        return order;
-    }
-
-    public void setOrder(Order order) {
-        this.order = order;
-    }
-
-    public Dish getDish() {
-        return dish;
-    }
-
-    public void setDish(Dish dish) {
-        this.dish = dish;
-    }
-
-    public Integer getQuantity() {
-        return quantity;
-    }
-
-    public void setQuantity(Integer quantity) {
-        this.quantity = quantity;
-    }
-
-    public Double getPrice() {
-        return price;
-    }
-
-    public void setPrice(Double price) {
-        this.price = price;
-    }
-
-    public List<OrderItemOption> getOrderItemOptions() {
-        return orderItemOptions;
-    }
-
-    public void setOrderItemOptions(List<OrderItemOption> orderItemOptions) {
-        this.orderItemOptions = orderItemOptions;
-    }
 }

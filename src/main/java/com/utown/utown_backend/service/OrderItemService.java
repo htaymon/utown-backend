@@ -1,88 +1,76 @@
 package com.utown.utown_backend.service;
 
-import com.utown.utown_backend.dto.OrderItemDTO;
+import com.utown.utown_backend.dto.OrderItemRequestDTO;
+import com.utown.utown_backend.dto.response.OrderItemResponseDTO;
 import com.utown.utown_backend.entity.Dish;
 import com.utown.utown_backend.entity.Order;
 import com.utown.utown_backend.entity.OrderItem;
+import com.utown.utown_backend.mapper.OrderItemMapper;
 import com.utown.utown_backend.repository.DishRepository;
 import com.utown.utown_backend.repository.OrderItemRepository;
 import com.utown.utown_backend.repository.OrderRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import jakarta.persistence.EntityNotFoundException;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class OrderItemService {
 
-    private final OrderItemRepository itemRepository;
+    private final OrderItemRepository orderItemRepository;
     private final OrderRepository orderRepository;
     private final DishRepository dishRepository;
+    private final OrderItemMapper mapper;
 
-    public OrderItemService(OrderItemRepository itemRepository,
-                            OrderRepository orderRepository,
-                            DishRepository dishRepository) {
-        this.itemRepository = itemRepository;
-        this.orderRepository = orderRepository;
-        this.dishRepository = dishRepository;
+    public OrderItemResponseDTO create(OrderItemRequestDTO dto) {
+
+        Order order = orderRepository.findById(dto.getOrderId())
+                .orElseThrow(() -> new EntityNotFoundException("Order not found"));
+
+        Dish dish = dishRepository.findById(dto.getDishId())
+                .orElseThrow(() -> new EntityNotFoundException("Dish not found"));
+
+        OrderItem entity = mapper.toEntity(dto);
+
+        entity.setOrder(order);
+        entity.setDish(dish);
+
+        return mapper.toResponseDTO(
+                orderItemRepository.save(entity)
+        );
     }
 
-    public List<OrderItemDTO> getAllOrderItems() {
-        return itemRepository.findAll()
+    public OrderItemResponseDTO getById(Long id) {
+        OrderItem item = orderItemRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("OrderItem not found"));
+
+        return mapper.toResponseDTO(item);
+    }
+
+    public List<OrderItemResponseDTO> getAll() {
+        return orderItemRepository.findAll()
                 .stream()
-                .map(item -> {
-                    OrderItemDTO dto = new OrderItemDTO();
-                    dto.setOrderItemId(item.getOrderItemId());
-                    dto.setOrderId(item.getOrder() != null ? item.getOrder().getOrderId() : null);
-                    dto.setDishId(item.getDish() != null ? item.getDish().getDishId() : null);
-                    dto.setQuantity(item.getQuantity());
-                    dto.setPrice(item.getPrice());
-                    return dto;
-                })
-                .toList();
+                .map(mapper::toResponseDTO)
+                .collect(Collectors.toList());
     }
 
-    public OrderItemDTO getOrderItemById(Long id) {
-        return itemRepository.findById(id)
-                .map(item -> {
-                    OrderItemDTO dto = new OrderItemDTO();
-                    dto.setOrderItemId(item.getOrderItemId());
-                    dto.setOrderId(item.getOrder() != null ? item.getOrder().getOrderId() : null);
-                    dto.setDishId(item.getDish() != null ? item.getDish().getDishId() : null);
-                    dto.setQuantity(item.getQuantity());
-                    dto.setPrice(item.getPrice());
-                    return dto;
-                })
-                .orElse(null);
+    public OrderItemResponseDTO update(Long id, OrderItemRequestDTO dto) {
+
+        OrderItem existing = orderItemRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("OrderItem not found"));
+
+        existing.setQuantity(dto.getQuantity());
+        existing.setPrice(dto.getPrice());
+
+        return mapper.toResponseDTO(
+                orderItemRepository.save(existing)
+        );
     }
 
-    public OrderItemDTO createOrderItem(OrderItemDTO dto) {
-        Order order = orderRepository.findById(dto.getOrderId()).orElse(null);
-        Dish dish = dishRepository.findById(dto.getDishId()).orElse(null);
-
-        OrderItem item = new OrderItem(order, dish, dto.getQuantity(), dto.getPrice());
-        OrderItem saved = itemRepository.save(item);
-
-        dto.setOrderItemId(saved.getOrderItemId());
-        return dto;
-    }
-
-    public OrderItemDTO updateOrderItem(Long id, OrderItemDTO dto) {
-        OrderItem item = itemRepository.findById(id).orElse(null);
-        if (item != null) {
-            item.setQuantity(dto.getQuantity());
-            item.setPrice(dto.getPrice());
-            Order order = orderRepository.findById(dto.getOrderId()).orElse(null);
-            Dish dish = dishRepository.findById(dto.getDishId()).orElse(null);
-            item.setOrder(order);
-            item.setDish(dish);
-            itemRepository.save(item);
-            dto.setOrderItemId(item.getOrderItemId());
-            return dto;
-        }
-        return null;
-    }
-
-    public void deleteOrderItem(Long id) {
-        itemRepository.deleteById(id);
+    public void delete(Long id) {
+        orderItemRepository.deleteById(id);
     }
 }

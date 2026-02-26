@@ -1,44 +1,42 @@
 package com.utown.utown_backend.controller;
 
-import com.utown.utown_backend.dto.WorkScheduleDTO;
-import com.utown.utown_backend.entity.WorkSchedule;
+import com.utown.utown_backend.dto.request.WorkScheduleRequestDTO;
+import com.utown.utown_backend.dto.response.WorkScheduleResponseDTO;
 import com.utown.utown_backend.service.WorkScheduleService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/work-schedules")
+@RequiredArgsConstructor
 public class WorkScheduleController {
 
     private final WorkScheduleService service;
 
-    public WorkScheduleController(WorkScheduleService service) {
-        this.service = service;
+    @PostMapping
+    public WorkScheduleResponseDTO create(@RequestBody WorkScheduleRequestDTO dto) {
+        return service.create(dto);
     }
 
     @GetMapping
-    public List<WorkSchedule> getAllSchedules() {
-        return service.getAllSchedules();
+    public List<WorkScheduleResponseDTO> getAll() {
+        return service.getAll();
     }
 
     @GetMapping("/{id}")
-    public WorkSchedule getScheduleById(@PathVariable Long id) {
-        return service.getScheduleById(id);
-    }
-
-    @PostMapping
-    public WorkSchedule createSchedule(@RequestBody WorkScheduleDTO dto) {
-        return service.createSchedule(dto);
+    public WorkScheduleResponseDTO getById(@PathVariable Long id) {
+        return service.getById(id);
     }
 
     @PutMapping("/{id}")
-    public WorkSchedule updateSchedule(@PathVariable Long id, @RequestBody WorkScheduleDTO dto) {
-        return service.updateSchedule(id, dto);
+    public WorkScheduleResponseDTO update(@PathVariable Long id, @RequestBody WorkScheduleRequestDTO dto) {
+        return service.update(id, dto);
     }
 
     @DeleteMapping("/{id}")
-    public void deleteSchedule(@PathVariable Long id) {
-        service.deleteSchedule(id);
+    public void delete(@PathVariable Long id) {
+        service.delete(id);
     }
 }

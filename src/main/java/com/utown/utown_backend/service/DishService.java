@@ -1,73 +1,98 @@
 package com.utown.utown_backend.service;
 
-import com.utown.utown_backend.dto.DishDTO;
+import com.utown.utown_backend.dto.request.DishRequestDTO;
+import com.utown.utown_backend.dto.response.DishResponseDTO;
 import com.utown.utown_backend.entity.Dish;
 import com.utown.utown_backend.entity.DishCategory;
 import com.utown.utown_backend.entity.Restaurant;
+import com.utown.utown_backend.mapper.DishMapper;
 import com.utown.utown_backend.repository.DishCategoryRepository;
 import com.utown.utown_backend.repository.DishRepository;
 import com.utown.utown_backend.repository.RestaurantRepository;
+import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
+@Transactional
 public class DishService {
 
     private final DishRepository dishRepository;
     private final RestaurantRepository restaurantRepository;
     private final DishCategoryRepository dishCategoryRepository;
+    private final DishMapper mapper;
 
-    public DishService(DishRepository dishRepository,
-                       RestaurantRepository restaurantRepository,
-                       DishCategoryRepository dishCategoryRepository) {
-        this.dishRepository = dishRepository;
-        this.restaurantRepository = restaurantRepository;
-        this.dishCategoryRepository = dishCategoryRepository;
-    }
+    public DishResponseDTO create(DishRequestDTO dto) {
 
-    public List<Dish> getAllDishes() {
-        return dishRepository.findAll();
-    }
-
-    public Dish getDishById(Long id) {
-        return dishRepository.findById(id).orElse(null);
-    }
-
-    public Dish createDish(DishDTO dto) {
         Restaurant restaurant = restaurantRepository.findById(dto.getRestaurantId())
-                .orElseThrow(() -> new RuntimeException("Restaurant not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Restaurant not found"));
+
         DishCategory category = dishCategoryRepository.findById(dto.getDishCategoryId())
-                .orElseThrow(() -> new RuntimeException("DishCategory not found"));
+                .orElseThrow(() -> new EntityNotFoundException("DishCategory not found"));
 
-        Dish dish = new Dish(restaurant, category, dto.getName(), dto.getDescription(),
-                dto.getPrice(), dto.getImage(), dto.getStatus(), dto.getPriority());
-        return dishRepository.save(dish);
+        Dish dish = Dish.builder()
+                .name(dto.getName())
+                .description(dto.getDescription())
+                .price(dto.getPrice())
+                .image(dto.getImage())
+                .status(dto.getStatus())
+                .priority(dto.getPriority())
+                .restaurant(restaurant)
+                .dishCategory(category)
+                .build();
+
+        Dish savedDish = dishRepository.save(dish);
+
+        return mapper.toResponseDTO(savedDish);
     }
 
-    public Dish updateDish(Long id, DishDTO dto) {
-        Dish dish = dishRepository.findById(id).orElse(null);
-        if (dish != null) {
-            Restaurant restaurant = restaurantRepository.findById(dto.getRestaurantId())
-                    .orElseThrow(() -> new RuntimeException("Restaurant not found"));
-            DishCategory category = dishCategoryRepository.findById(dto.getDishCategoryId())
-                    .orElseThrow(() -> new RuntimeException("DishCategory not found"));
-
-            dish.setRestaurant(restaurant);
-            dish.setDishCategory(category);
-            dish.setName(dto.getName());
-            dish.setDescription(dto.getDescription());
-            dish.setPrice(dto.getPrice());
-            dish.setImage(dto.getImage());
-            dish.setStatus(dto.getStatus());
-            dish.setPriority(dto.getPriority());
-
-            return dishRepository.save(dish);
-        }
-        return null;
+    @Transactional(readOnly = true)
+    public List<DishResponseDTO> getAll() {
+        return mapper.toResponseList(
+                dishRepository.findAll()
+        );
     }
 
-    public void deleteDish(Long id) {
-        dishRepository.deleteById(id);
+    @Transactional(readOnly = true)
+    public DishResponseDTO getById(Long id) {
+        Dish dish = dishRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Dish not found"));
+
+        return mapper.toResponseDTO(dish);
+    }
+
+    public DishResponseDTO update(Long id, DishRequestDTO dto) {
+
+        Dish dish = dishRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Dish not found"));
+
+        Restaurant restaurant = restaurantRepository.findById(dto.getRestaurantId())
+                .orElseThrow(() -> new EntityNotFoundException("Restaurant not found"));
+
+        DishCategory category = dishCategoryRepository.findById(dto.getDishCategoryId())
+                .orElseThrow(() -> new EntityNotFoundException("DishCategory not found"));
+
+        dish.setName(dto.getName());
+        dish.setDescription(dto.getDescription());
+        dish.setPrice(dto.getPrice());
+        dish.setImage(dto.getImage());
+        dish.setStatus(dto.getStatus());
+        dish.setPriority(dto.getPriority());
+        dish.setRestaurant(restaurant);
+        dish.setDishCategory(category);
+
+        return mapper.toResponseDTO(
+                dishRepository.save(dish)
+        );
+    }
+
+    public void delete(Long id) {
+        Dish dish = dishRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Dish not found"));
+        dishRepository.delete(dish);
     }
 }

@@ -1,75 +1,72 @@
 package com.utown.utown_backend.service;
 
-import com.utown.utown_backend.dto.OptionDTO;
-import com.utown.utown_backend.dto.OptionResponseDTO;
+import com.utown.utown_backend.dto.request.OptionRequestDTO;
+import com.utown.utown_backend.dto.response.OptionResponseDTO;
 import com.utown.utown_backend.entity.Dish;
 import com.utown.utown_backend.entity.Option;
+import com.utown.utown_backend.mapper.OptionMapper;
 import com.utown.utown_backend.repository.DishRepository;
 import com.utown.utown_backend.repository.OptionRepository;
+import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
+@Transactional
 public class OptionService {
 
-    private final OptionRepository repository;
+    private final OptionRepository optionRepository;
     private final DishRepository dishRepository;
+    private final OptionMapper mapper;
 
-    public OptionService(OptionRepository repository, DishRepository dishRepository) {
-        this.repository = repository;
-        this.dishRepository = dishRepository;
-    }
+    public OptionResponseDTO create(OptionRequestDTO dto) {
 
-    public List<OptionResponseDTO> getAllOptions() {
-        List<Option> options = repository.findAll();
-        List<OptionResponseDTO> response = new ArrayList<>();
-        for (Option o : options) {
-            response.add(new OptionResponseDTO(
-                    o.getOptionId(),
-                    o.getName(),
-                    o.getExtraPrice(),
-                    o.getDish().getDishId(),
-                    o.getDish().getName()
-            ));
-        }
-        return response;
-    }
+        Dish dish = dishRepository.findById(dto.getDishId())
+                .orElseThrow(() -> new EntityNotFoundException("Dish not found"));
 
-    public OptionResponseDTO getOptionById(Long id) {
-        Option o = repository.findById(id).orElse(null);
-        if (o == null) return null;
-        return new OptionResponseDTO(
-                o.getOptionId(),
-                o.getName(),
-                o.getExtraPrice(),
-                o.getDish().getDishId(),
-                o.getDish().getName()
+        Option option = mapper.toEntity(dto);
+        option.setDish(dish);
+
+        return mapper.toResponseDTO(
+                optionRepository.save(option)
         );
     }
 
-    public Option createOption(OptionDTO dto) {
+    @Transactional(readOnly = true)
+    public List<OptionResponseDTO> getAll() {
+        return mapper.toResponseList(
+                optionRepository.findAll()
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public OptionResponseDTO getById(Long id) {
+        Option option = optionRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Option not found"));
+        return mapper.toResponseDTO(option);
+    }
+
+    public OptionResponseDTO update(Long id, OptionRequestDTO dto) {
+        Option option = optionRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Option not found"));
         Dish dish = dishRepository.findById(dto.getDishId())
-                .orElseThrow(() -> new RuntimeException("Dish not found"));
-        Option option = new Option(dish, dto.getName(), dto.getExtraPrice());
-        return repository.save(option);
+                .orElseThrow(() -> new EntityNotFoundException("Dish not found"));
+        option.setName(dto.getName());
+        option.setExtraPrice(dto.getExtraPrice());
+        option.setDish(dish);
+
+        return mapper.toResponseDTO(
+                optionRepository.save(option)
+        );
     }
 
-    public Option updateOption(Long id, OptionDTO dto) {
-        Option option = repository.findById(id).orElse(null);
-        if (option != null) {
-            Dish dish = dishRepository.findById(dto.getDishId())
-                    .orElseThrow(() -> new RuntimeException("Dish not found"));
-            option.setDish(dish);
-            option.setName(dto.getName());
-            option.setExtraPrice(dto.getExtraPrice());
-            return repository.save(option);
-        }
-        return null;
-    }
-
-    public void deleteOption(Long id) {
-        repository.deleteById(id);
+    public void delete(Long id) {
+        Option option = optionRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Option not found"));
+        optionRepository.delete(option);
     }
 }

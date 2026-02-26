@@ -1,44 +1,44 @@
 package com.utown.utown_backend.controller;
 
-import com.utown.utown_backend.dto.DishDTO;
-import com.utown.utown_backend.entity.Dish;
+import com.utown.utown_backend.dto.request.DishRequestDTO;
+import com.utown.utown_backend.dto.response.DishResponseDTO;
 import com.utown.utown_backend.service.DishService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/dishes")
+@RequiredArgsConstructor
 public class DishController {
 
     private final DishService service;
 
-    public DishController(DishService service) {
-        this.service = service;
-    }
-
     @GetMapping
-    public List<Dish> getAllDishes() {
-        return service.getAllDishes();
+    public List<DishResponseDTO> getAll() {
+        return service.getAll();
     }
 
     @GetMapping("/{id}")
-    public Dish getDishById(@PathVariable Long id) {
-        return service.getDishById(id);
+    public DishResponseDTO getById(@PathVariable Long id) {
+        return service.getById(id);
     }
 
     @PostMapping
-    public Dish createDish(@RequestBody DishDTO dto) {
-        return service.createDish(dto);
+    public DishResponseDTO create(@RequestBody DishRequestDTO dto) {
+        return service.create(dto);
     }
 
     @PutMapping("/{id}")
-    public Dish updateDish(@PathVariable Long id, @RequestBody DishDTO dto) {
-        return service.updateDish(id, dto);
+    public DishResponseDTO update(
+            @PathVariable Long id,
+            @RequestBody DishRequestDTO dto) {
+        return service.update(id, dto);
     }
 
     @DeleteMapping("/{id}")
-    public void deleteDish(@PathVariable Long id) {
-        service.deleteDish(id);
+    public void delete(@PathVariable Long id) {
+        service.delete(id);
     }
 }

@@ -1,69 +1,35 @@
 package com.utown.utown_backend.entity;
 
 import jakarta.persistence.*;
+import lombok.*;
 
+import java.time.DayOfWeek;
+import java.time.LocalTime;
+
+@Setter
+@Getter
 @Entity
 @Table(name = "work_schedules")
-public class WorkSchedule {
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class WorkSchedule extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long scheduleId;
+    private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "restaurant_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "restaurant_id", nullable = false)
     private Restaurant restaurant;
 
-    private String dayOfWeek;
-    private String startTime;
-    private String endTime;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private DayOfWeek dayOfWeek;
 
-    public WorkSchedule() {}
+    @Column(nullable = false)
+    private LocalTime startTime;
 
-    public WorkSchedule(Restaurant restaurant, String dayOfWeek, String startTime, String endTime) {
-        this.restaurant = restaurant;
-        this.dayOfWeek = dayOfWeek;
-        this.startTime = startTime;
-        this.endTime = endTime;
-    }
-
-    public Long getScheduleId() {
-        return scheduleId;
-    }
-
-    public void setScheduleId(Long scheduleId) {
-        this.scheduleId = scheduleId;
-    }
-
-    public Restaurant getRestaurant() {
-        return restaurant;
-    }
-
-    public void setRestaurant(Restaurant restaurant) {
-        this.restaurant = restaurant;
-    }
-
-    public String getDayOfWeek() {
-        return dayOfWeek;
-    }
-
-    public void setDayOfWeek(String dayOfWeek) {
-        this.dayOfWeek = dayOfWeek;
-    }
-
-    public String getStartTime() {
-        return startTime;
-    }
-
-    public void setStartTime(String startTime) {
-        this.startTime = startTime;
-    }
-
-    public String getEndTime() {
-        return endTime;
-    }
-
-    public void setEndTime(String endTime) {
-        this.endTime = endTime;
-    }
+    @Column(nullable = false)
+    private LocalTime endTime;
 }

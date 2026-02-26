@@ -1,59 +1,70 @@
 package com.utown.utown_backend.service;
 
-import com.utown.utown_backend.dto.UserDTO;
+import com.utown.utown_backend.dto.request.UserRequestDTO;
+import com.utown.utown_backend.dto.response.UserResponseDTO;
 import com.utown.utown_backend.entity.Role;
 import com.utown.utown_backend.entity.User;
+import com.utown.utown_backend.mapper.UserMapper;
 import com.utown.utown_backend.repository.RoleRepository;
 import com.utown.utown_backend.repository.UserRepository;
+import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
+@Transactional
 public class UserService {
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
+    private final UserMapper userMapper;
 
-    public UserService(UserRepository userRepository, RoleRepository roleRepository) {
-        this.userRepository = userRepository;
-        this.roleRepository = roleRepository;
-    }
-
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
-    }
-
-    public User getUserById(Long id) {
-        return userRepository.findById(id).orElse(null);
-    }
-
-    public User createUser(UserDTO dto) {
+    public UserResponseDTO create(UserRequestDTO dto) {
         Role role = roleRepository.findById(dto.getRoleId())
-                .orElseThrow(() -> new RuntimeException("Role not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Role not found"));
 
-        User user = new User(dto.getName(), dto.getEmail(), dto.getPhoneNumber(), role);
+        User user = User.builder()
+                .name(dto.getName())
+                .email(dto.getEmail())
+                .phoneNumber(dto.getPhoneNumber())
+                .role(role)
+                .build();
 
-        return userRepository.save(user);
+        return userMapper.toResponseDTO(userRepository.save(user));
     }
 
-    public User updateUser(Long id, UserDTO dto) {
-        User user = userRepository.findById(id).orElse(null);
-        if (user != null) {
-            Role role = roleRepository.findById(dto.getRoleId())
-                    .orElseThrow(() -> new RuntimeException("Role not found"));
-
-            user.setName(dto.getName());
-            user.setEmail(dto.getEmail());
-            user.setPhoneNumber(dto.getPhoneNumber());
-            user.setRole(role);
-
-            return userRepository.save(user);
-        }
-        return null;
+    @Transactional(readOnly = true)
+    public List<UserResponseDTO> getAll() {
+        return userMapper.toResponseList(userRepository.findAll());
     }
 
-    public void deleteUser(Long id) {
+    @Transactional(readOnly = true)
+    public UserResponseDTO getById(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+        return userMapper.toResponseDTO(user);
+    }
+
+    public UserResponseDTO update(Long id, UserRequestDTO dto) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+
+        Role role = roleRepository.findById(dto.getRoleId())
+                .orElseThrow(() -> new EntityNotFoundException("Role not found"));
+
+        user.setName(dto.getName());
+        user.setEmail(dto.getEmail());
+        user.setPhoneNumber(dto.getPhoneNumber());
+        user.setRole(role);
+
+        return userMapper.toResponseDTO(userRepository.save(user));
+    }
+
+    public void delete(Long id) {
         userRepository.deleteById(id);
     }
 }

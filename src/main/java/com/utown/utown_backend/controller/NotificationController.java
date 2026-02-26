@@ -1,44 +1,45 @@
 package com.utown.utown_backend.controller;
 
-import com.utown.utown_backend.dto.NotificationDTO;
-import com.utown.utown_backend.entity.Notification;
+import com.utown.utown_backend.dto.request.NotificationRequestDTO;
+import com.utown.utown_backend.dto.response.NotificationResponseDTO;
 import com.utown.utown_backend.service.NotificationService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/notifications")
+@RequiredArgsConstructor
 public class NotificationController {
 
     private final NotificationService service;
 
-    public NotificationController(NotificationService service) {
-        this.service = service;
-    }
-
     @GetMapping
-    public List<Notification> getAll() {
-        return service.getAllNotifications();
+    public List<NotificationResponseDTO> getAll() {
+        return service.getAll();
     }
 
     @GetMapping("/{id}")
-    public Notification getById(@PathVariable Long id) {
-        return service.getNotificationById(id);
+    public NotificationResponseDTO getById(@PathVariable Long id) {
+        return service.getById(id);
     }
 
     @PostMapping
-    public Notification create(@RequestBody NotificationDTO dto) {
-        return service.createNotification(dto);
+    public NotificationResponseDTO create(
+            @RequestBody NotificationRequestDTO dto) {
+        return service.create(dto);
     }
 
     @PutMapping("/{id}")
-    public Notification update(@PathVariable Long id, @RequestBody NotificationDTO dto) {
-        return service.updateNotification(id, dto);
+    public NotificationResponseDTO update(
+            @PathVariable Long id,
+            @RequestBody NotificationRequestDTO dto) {
+        return service.update(id, dto);
     }
 
     @DeleteMapping("/{id}")
     public void delete(@PathVariable Long id) {
-        service.deleteNotification(id);
+        service.delete(id);
     }
 }

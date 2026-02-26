@@ -1,44 +1,43 @@
 package com.utown.utown_backend.controller;
 
-import com.utown.utown_backend.dto.DishCategoryDTO;
-import com.utown.utown_backend.entity.DishCategory;
+import com.utown.utown_backend.dto.request.DishCategoryRequestDTO;
+import com.utown.utown_backend.dto.response.DishCategoryResponseDTO;
 import com.utown.utown_backend.service.DishCategoryService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/dish-categories")
+@RequiredArgsConstructor
 public class DishCategoryController {
 
     private final DishCategoryService service;
 
-    public DishCategoryController(DishCategoryService service) {
-        this.service = service;
+    @PostMapping
+    public DishCategoryResponseDTO create(@RequestBody DishCategoryRequestDTO dto) {
+        return service.create(dto);
     }
 
     @GetMapping
-    public List<DishCategory> getAllCategories() {
-        return service.getAllCategories();
+    public List<DishCategoryResponseDTO> getAll() {
+        return service.getAll();
     }
 
     @GetMapping("/{id}")
-    public DishCategory getCategoryById(@PathVariable Long id) {
-        return service.getCategoryById(id);
-    }
-
-    @PostMapping
-    public DishCategory createCategory(@RequestBody DishCategoryDTO dto) {
-        return service.createCategory(dto);
+    public DishCategoryResponseDTO getById(@PathVariable Long id) {
+        return service.getById(id);
     }
 
     @PutMapping("/{id}")
-    public DishCategory updateCategory(@PathVariable Long id, @RequestBody DishCategoryDTO dto) {
-        return service.updateCategory(id, dto);
+    public DishCategoryResponseDTO update(@PathVariable Long id,
+                                          @RequestBody DishCategoryRequestDTO dto) {
+        return service.update(id, dto);
     }
 
     @DeleteMapping("/{id}")
-    public void deleteCategory(@PathVariable Long id) {
-        service.deleteCategory(id);
+    public void delete(@PathVariable Long id) {
+        service.delete(id);
     }
 }
