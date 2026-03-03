@@ -4,11 +4,13 @@ import com.utown.utown_backend.dto.request.UserRequestDTO;
 import com.utown.utown_backend.dto.response.UserResponseDTO;
 import com.utown.utown_backend.entity.Role;
 import com.utown.utown_backend.entity.User;
+import com.utown.utown_backend.exception.EmailAlreadyExistsException;
 import com.utown.utown_backend.mapper.UserMapper;
 import com.utown.utown_backend.repository.RoleRepository;
 import com.utown.utown_backend.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,14 +24,20 @@ public class UserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final UserMapper userMapper;
+    private final PasswordEncoder passwordEncoder;
 
     public UserResponseDTO create(UserRequestDTO dto) {
+
+        if (userRepository.existsByEmail(dto.getEmail())) {
+            throw new EmailAlreadyExistsException("Email already exists");
+        }
         Role role = roleRepository.findById(dto.getRoleId())
                 .orElseThrow(() -> new EntityNotFoundException("Role not found"));
 
         User user = User.builder()
                 .name(dto.getName())
                 .email(dto.getEmail())
+                .password(passwordEncoder.encode(dto.getPassword()))
                 .phoneNumber(dto.getPhoneNumber())
                 .role(role)
                 .build();
@@ -58,6 +66,7 @@ public class UserService {
 
         user.setName(dto.getName());
         user.setEmail(dto.getEmail());
+        user.setPassword(dto.getPassword());
         user.setPhoneNumber(dto.getPhoneNumber());
         user.setRole(role);
 
