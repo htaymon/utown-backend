@@ -3,10 +3,12 @@ package com.utown.utown_backend.controller;
 import com.utown.utown_backend.dto.request.OrderItemOptionRequestDTO;
 import com.utown.utown_backend.dto.response.OrderItemOptionResponseDTO;
 import com.utown.utown_backend.service.OrderItemOptionService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -18,8 +20,10 @@ public class OrderItemOptionController {
 
     @PostMapping
     public ResponseEntity<OrderItemOptionResponseDTO> create(
-            @RequestBody OrderItemOptionRequestDTO dto) {
-        return ResponseEntity.ok(service.create(dto));
+            @Valid @RequestBody OrderItemOptionRequestDTO dto) {
+        OrderItemOptionResponseDTO response = service.create(dto);
+        URI location = URI.create("/order-item-options/" + response.getId());
+        return ResponseEntity.created(location).body(response);
     }
 
     @GetMapping
@@ -35,7 +39,7 @@ public class OrderItemOptionController {
     @PutMapping("/{id}")
     public ResponseEntity<OrderItemOptionResponseDTO> update(
             @PathVariable Long id,
-            @RequestBody OrderItemOptionRequestDTO dto) {
+            @Valid @RequestBody OrderItemOptionRequestDTO dto) {
         return ResponseEntity.ok(service.update(id, dto));
     }
 

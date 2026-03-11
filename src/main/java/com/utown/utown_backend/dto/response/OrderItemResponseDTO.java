@@ -12,12 +12,10 @@ import java.util.List;
 public class OrderItemResponseDTO {
 
     private Long id;
-    private Long orderId;
     private Long dishId;
     private String dishName;
-
     private Integer quantity;
     private Double price;
 
-    private List<OrderItemOptionResponseDTO> options;
+   // private List<OrderItemOptionResponseDTO> options;
 }

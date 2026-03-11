@@ -3,9 +3,12 @@ package com.utown.utown_backend.controller;
 import com.utown.utown_backend.dto.request.CartItemRequestDTO;
 import com.utown.utown_backend.dto.response.CartItemResponseDTO;
 import com.utown.utown_backend.service.CartItemService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -16,13 +19,15 @@ public class CartItemController {
     private final CartItemService service;
 
     @PostMapping
-    public CartItemResponseDTO create(@RequestBody CartItemRequestDTO dto) {
-        return service.create(dto);
+    public ResponseEntity<CartItemResponseDTO> create(@Valid @RequestBody CartItemRequestDTO dto) {
+        CartItemResponseDTO response = service.create(dto);
+        URI location = URI.create("/cart-items/" + response.getId());
+        return ResponseEntity.created(location).body(response);
     }
 
     @PutMapping("/{id}")
     public CartItemResponseDTO update(@PathVariable Long id,
-                                      @RequestBody CartItemRequestDTO dto) {
+                                      @Valid @RequestBody CartItemRequestDTO dto) {
         return service.update(id, dto);
     }
 
@@ -32,7 +37,8 @@ public class CartItemController {
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
         service.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }

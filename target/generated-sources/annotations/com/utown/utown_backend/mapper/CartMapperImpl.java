@@ -13,8 +13,8 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2026-02-27T02:52:08+0900",
-    comments = "version: 1.5.5.Final, compiler: javac, environment: Java 21.0.8 (Oracle Corporation)"
+    date = "2026-03-10T17:21:11+0900",
+    comments = "version: 1.5.5.Final, compiler: javac, environment: Java 17.0.18 (Homebrew)"
 )
 @Component
 public class CartMapperImpl implements CartMapper {
@@ -43,8 +43,8 @@ public class CartMapperImpl implements CartMapper {
 
         cartResponseDTO.userId( cartUserId( cart ) );
         cartResponseDTO.restaurantId( cartRestaurantId( cart ) );
-        cartResponseDTO.id( cart.getId() );
         cartResponseDTO.cartItems( cartItemMapper.toResponseList( cart.getCartItems() ) );
+        cartResponseDTO.id( cart.getId() );
 
         return cartResponseDTO.build();
     }

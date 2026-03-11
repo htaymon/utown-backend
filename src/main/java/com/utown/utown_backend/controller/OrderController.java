@@ -1,11 +1,20 @@
 package com.utown.utown_backend.controller;
 
-import com.utown.utown_backend.dto.OrderRequestDTO;
+import com.utown.utown_backend.dto.request.OrderRequestDTO;
 import com.utown.utown_backend.dto.response.OrderResponseDTO;
+import com.utown.utown_backend.entity.User;
+import com.utown.utown_backend.repository.UserRepository;
 import com.utown.utown_backend.service.OrderService;
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -13,31 +22,40 @@ import java.util.List;
 @RequiredArgsConstructor
 public class OrderController {
 
-    private final OrderService service;
+    private final OrderService orderService;
+    private final UserRepository userRepository;
 
     @PostMapping
-    public OrderResponseDTO create(@RequestBody OrderRequestDTO dto) {
-        return service.create(dto);
+    public ResponseEntity<OrderResponseDTO> create(@Valid @RequestBody OrderRequestDTO dto) {
+        OrderResponseDTO response = orderService.create(dto);
+        URI location = URI.create("/orders/" + response.getId());
+        return ResponseEntity.created(location).body(response);
     }
 
-    @GetMapping("/{id}")
-    public OrderResponseDTO getById(@PathVariable Long id) {
-        return service.getById(id);
+    @GetMapping("/my")
+    public List<OrderResponseDTO> getMyOrders() {
+
+        Authentication authentication =
+                SecurityContextHolder.getContext().getAuthentication();
+
+        String email = authentication.getName();
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+
+        return orderService.getUserOrders(user.getId());
     }
 
-    @GetMapping
-    public List<OrderResponseDTO> getAll() {
-        return service.getAll();
+    @PreAuthorize("hasRole('RESTAURANT_ADMIN')")
+    @GetMapping("/restaurant/{restaurantId}")
+    public List<OrderResponseDTO> getRestaurantOrders(
+            @PathVariable Long restaurantId) {
+
+        return orderService.getRestaurantOrders(restaurantId);
     }
 
-    @PutMapping("/{id}")
-    public OrderResponseDTO update(@PathVariable Long id,
-                                   @RequestBody OrderRequestDTO dto) {
-        return service.update(id, dto);
-    }
-
-    @DeleteMapping("/{id}")
-    public void delete(@PathVariable Long id) {
-        service.delete(id);
+    @PutMapping("/{id}/cancel")
+    public OrderResponseDTO cancelOrder(@PathVariable Long id) {
+        return orderService.cancelOrder(id);
     }
 }

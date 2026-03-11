@@ -1,3 +1,4 @@
+/Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/security/CustomUserDetails.java
 /Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/mapper/DishMapper.java
 /Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/entity/OrderItem.java
 /Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/mapper/CartItemMapper.java
@@ -9,6 +10,7 @@
 /Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/mapper/AddressMapper.java
 /Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/dto/request/UserRequestDTO.java
 /Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/repository/RoleRepository.java
+/Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/security/JwtUtil.java
 /Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/enums/OrderStatus.java
 /Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/dto/request/NotificationRequestDTO.java
 /Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/mapper/DishCategoryMapper.java
@@ -16,6 +18,7 @@
 /Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/controller/DishCategoryController.java
 /Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/service/RoleService.java
 /Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/entity/Restaurant.java
+/Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/security/JwtAuthenticationFilter.java
 /Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/dto/request/OrderRequestDTO.java
 /Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/service/CartItemService.java
 /Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/entity/Option.java
@@ -25,6 +28,7 @@
 /Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/mapper/WorkScheduleMapper.java
 /Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/service/DishCategoryService.java
 /Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/dto/response/DishCategoryResponseDTO.java
+/Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/exception/ErrorResponse.java
 /Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/service/DeliveryAreaService.java
 /Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/service/UserService.java
 /Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/entity/BaseEntity.java
@@ -32,12 +36,14 @@
 /Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/service/OrderItemOptionService.java
 /Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/controller/DeliveryAreaController.java
 /Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/dto/request/OrderItemOptionRequestDTO.java
+/Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/exception/EmailAlreadyExistsException.java
 /Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/mapper/OptionMapper.java
 /Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/controller/OrderController.java
 /Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/entity/DishCategory.java
 /Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/enums/DishStatus.java
 /Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/repository/DishCategoryRepository.java
 /Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/entity/Order.java
+/Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/controller/AuthController.java
 /Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/dto/request/OptionRequestDTO.java
 /Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/repository/OrderRepository.java
 /Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/repository/DeliveryAreaRepository.java
@@ -63,6 +69,7 @@
 /Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/dto/response/WorkScheduleResponseDTO.java
 /Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/repository/OrderItemOptionRepository.java
 /Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/dto/response/RestaurantCategoryResponseDTO.java
+/Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/security/CustomUserDetailsService.java
 /Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/controller/RestaurantController.java
 /Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/dto/request/RestaurantCategoryRequestDTO.java
 /Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/controller/OrderItemController.java
@@ -70,6 +77,7 @@
 /Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/dto/request/DishCategoryRequestDTO.java
 /Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/mapper/RestaurantMapper.java
 /Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/controller/DishController.java
+/Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/controller/RestaurantAdminController.java
 /Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/entity/WorkSchedule.java
 /Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/repository/AddressRepository.java
 /Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/entity/Cart.java
@@ -85,16 +93,19 @@
 /Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/repository/NotificationRepository.java
 /Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/mapper/RestaurantCategoryMapper.java
 /Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/service/CartService.java
+/Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/service/AuthService.java
 /Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/controller/RestaurantCategoryController.java
 /Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/mapper/OrderItemOptionMapper.java
 /Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/mapper/OrderMapper.java
 /Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/controller/OrderItemOptionController.java
 /Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/dto/response/NotificationResponseDTO.java
 /Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/dto/response/DeliveryAreaResponseDTO.java
+/Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/dto/request/RegisterRequestDTO.java
 /Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/service/NotificationService.java
 /Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/service/OptionService.java
 /Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/entity/Address.java
 /Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/entity/Notification.java
+/Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/controller/AdminController.java
 /Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/service/DishService.java
 /Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/dto/response/OrderItemResponseDTO.java
 /Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/dto/response/DishResponseDTO.java
@@ -110,10 +121,14 @@
 /Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/dto/response/OrderResponseDTO.java
 /Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/entity/Dish.java
 /Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/mapper/RoleMapper.java
+/Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/security/SecurityConfig.java
+/Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/controller/ClientController.java
 /Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/controller/RoleController.java
+/Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/exception/GlobalExceptionHandler.java
 /Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/service/WorkScheduleService.java
 /Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/repository/CartRepository.java
 /Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/service/RestaurantCategoryService.java
 /Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/controller/UserController.java
+/Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/dto/request/LoginRequestDTO.java
 /Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/mapper/DeliveryAreaMapper.java
 /Users/htayhtaymon/IdeaProjects/utown_backend_feb10/src/main/java/com/utown/utown_backend/dto/request/WorkScheduleRequestDTO.java

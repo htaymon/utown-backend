@@ -17,6 +17,7 @@ public interface CartMapper {
 
     @Mapping(target = "userId", source = "user.id")
     @Mapping(target = "restaurantId", source = "restaurant.id")
+    @Mapping(target = "cartItems", source = "cartItems")
     CartResponseDTO toResponseDTO(Cart cart);
 
     List<CartResponseDTO> toResponseList(List<Cart> items);

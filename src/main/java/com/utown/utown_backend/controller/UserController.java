@@ -3,42 +3,49 @@ package com.utown.utown_backend.controller;
 import com.utown.utown_backend.dto.request.UserRequestDTO;
 import com.utown.utown_backend.dto.response.UserResponseDTO;
 import com.utown.utown_backend.service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.util.List;
 
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('ADMIN')")
 public class UserController {
 
-    private final UserService service;
+    private final UserService userService;
 
     @PostMapping
-    public ResponseEntity<UserResponseDTO> create(@RequestBody UserRequestDTO dto) {
-        return ResponseEntity.ok(service.create(dto));
+    public ResponseEntity<UserResponseDTO> create(@Valid @RequestBody UserRequestDTO dto) {
+        UserResponseDTO response = userService.create(dto);
+        URI location = URI.create("/users/" + response.getId());
+        return ResponseEntity.created(location).body(response);
     }
 
     @GetMapping
-    public ResponseEntity<List<UserResponseDTO>> getAll() {
-        return ResponseEntity.ok(service.getAll());
+    public List<UserResponseDTO> getAll() {
+        return userService.getAll();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<UserResponseDTO> getById(@PathVariable Long id) {
-        return ResponseEntity.ok(service.getById(id));
+    public UserResponseDTO getById(@PathVariable Long id) {
+        return userService.getById(id);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<UserResponseDTO> update(@PathVariable Long id, @RequestBody UserRequestDTO dto) {
-        return ResponseEntity.ok(service.update(id, dto));
+    public UserResponseDTO update(@PathVariable Long id,
+                                  @Valid @RequestBody UserRequestDTO dto) {
+        return userService.update(id, dto);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
-        service.delete(id);
+        userService.delete(id);
         return ResponseEntity.noContent().build();
     }
 }

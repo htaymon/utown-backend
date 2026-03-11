@@ -4,8 +4,10 @@ import com.utown.utown_backend.dto.request.DishRequestDTO;
 import com.utown.utown_backend.dto.response.DishResponseDTO;
 import com.utown.utown_backend.service.DishService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -26,8 +28,10 @@ public class DishController {
     }
 
     @PostMapping
-    public DishResponseDTO create(@RequestBody DishRequestDTO dto) {
-        return service.create(dto);
+    public ResponseEntity<DishResponseDTO> create(@RequestBody DishRequestDTO dto) {
+        DishResponseDTO response = service.create(dto);
+        URI location = URI.create("/dishes/" + response.getId());
+        return ResponseEntity.created(location).body(response);
     }
 
     @PutMapping("/{id}")
@@ -38,7 +42,9 @@ public class DishController {
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+
         service.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }

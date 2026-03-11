@@ -3,5 +3,10 @@ package com.utown.utown_backend.repository;
 import com.utown.utown_backend.entity.CartItem;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface CartItemRepository extends JpaRepository<CartItem, Long> {
-}
+import java.util.List;
+import java.util.Optional;
+
+    public interface CartItemRepository extends JpaRepository<CartItem, Long> {
+        Optional<CartItem> findByCartIdAndDishId(Long cartId, Long dishId);
+        List<CartItem> findByCartId(Long cartId);
+    }
