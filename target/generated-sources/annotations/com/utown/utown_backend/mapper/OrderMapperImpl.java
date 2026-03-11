@@ -1,36 +1,28 @@
 package com.utown.utown_backend.mapper;
 
-import com.utown.utown_backend.dto.OrderRequestDTO;
+import com.utown.utown_backend.dto.response.OrderItemResponseDTO;
 import com.utown.utown_backend.dto.response.OrderResponseDTO;
 import com.utown.utown_backend.entity.Address;
 import com.utown.utown_backend.entity.Order;
+import com.utown.utown_backend.entity.OrderItem;
 import com.utown.utown_backend.entity.Restaurant;
 import com.utown.utown_backend.entity.User;
+import java.util.ArrayList;
+import java.util.List;
 import javax.annotation.processing.Generated;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2026-03-03T10:52:23+0900",
+    date = "2026-03-11T15:32:37+0900",
     comments = "version: 1.5.5.Final, compiler: javac, environment: Java 21.0.8 (Oracle Corporation)"
 )
 @Component
 public class OrderMapperImpl implements OrderMapper {
 
-    @Override
-    public Order toEntity(OrderRequestDTO dto) {
-        if ( dto == null ) {
-            return null;
-        }
-
-        Order.OrderBuilder order = Order.builder();
-
-        order.status( dto.getStatus() );
-        order.totalPrice( dto.getTotalPrice() );
-        order.cookingTime( dto.getCookingTime() );
-
-        return order.build();
-    }
+    @Autowired
+    private OrderItemMapper orderItemMapper;
 
     @Override
     public OrderResponseDTO toResponseDTO(Order order) {
@@ -43,6 +35,7 @@ public class OrderMapperImpl implements OrderMapper {
         orderResponseDTO.userId( orderUserId( order ) );
         orderResponseDTO.restaurantId( orderRestaurantId( order ) );
         orderResponseDTO.deliveryAddressId( orderDeliveryAddressId( order ) );
+        orderResponseDTO.items( orderItemListToOrderItemResponseDTOList( order.getOrderItems() ) );
         orderResponseDTO.id( order.getId() );
         orderResponseDTO.orderNo( order.getOrderNo() );
         orderResponseDTO.status( order.getStatus() );
@@ -95,5 +88,18 @@ public class OrderMapperImpl implements OrderMapper {
             return null;
         }
         return id;
+    }
+
+    protected List<OrderItemResponseDTO> orderItemListToOrderItemResponseDTOList(List<OrderItem> list) {
+        if ( list == null ) {
+            return null;
+        }
+
+        List<OrderItemResponseDTO> list1 = new ArrayList<OrderItemResponseDTO>( list.size() );
+        for ( OrderItem orderItem : list ) {
+            list1.add( orderItemMapper.toResponseDTO( orderItem ) );
+        }
+
+        return list1;
     }
 }

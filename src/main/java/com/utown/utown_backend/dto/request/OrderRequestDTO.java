@@ -1,6 +1,6 @@
-package com.utown.utown_backend.dto;
+package com.utown.utown_backend.dto.request;
 
-import com.utown.utown_backend.enums.OrderStatus;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 @Getter
@@ -10,11 +10,7 @@ import lombok.*;
 @Builder
 public class OrderRequestDTO {
 
-    private Long userId;
-    private Long restaurantId;
+    @NotNull(message = "Delivery Address ID is required")
     private Long deliveryAddressId;
 
-    private OrderStatus status;
-    private Double totalPrice;
-    private Integer cookingTime;
 }

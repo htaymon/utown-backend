@@ -5,6 +5,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
@@ -12,14 +13,25 @@ import java.util.Date;
 
 @Component
 public class JwtUtil {
-    private String secretKey = "5367566859703373367639792F423F452848284D6251655468576D5A71347437";
-    private long validityInMilliseconds = 86400000;
+    @Value("${app.jwt.secret}")
+    private String secretKey;
+
+    @Value("${app.jwt.expiration-ms}")
+    private long validityInMilliseconds;
 
     private Key key;
 
     @PostConstruct
     protected void init() {
-        key = Keys.hmacShaKeyFor(secretKey.getBytes());
+        byte[] keyBytes = secretKey.getBytes();
+
+        if (keyBytes.length < 32) {
+            throw new IllegalArgumentException(
+                    "JWT secret key must be at least 32 bytes for HS256 algorithm"
+            );
+        }
+
+        key = Keys.hmacShaKeyFor(keyBytes);
     }
 
     public String generateToken(String email, String role) {

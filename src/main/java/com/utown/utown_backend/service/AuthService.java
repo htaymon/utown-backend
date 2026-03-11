@@ -7,7 +7,10 @@ import com.utown.utown_backend.entity.User;
 import com.utown.utown_backend.exception.EmailAlreadyExistsException;
 import com.utown.utown_backend.repository.RoleRepository;
 import com.utown.utown_backend.repository.UserRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,7 +31,7 @@ public class AuthService {
         }
 
         Role clientRole = roleRepository.findByName("CLIENT")
-                .orElseThrow(() -> new RuntimeException("CLIENT role not found"));
+                .orElseThrow(() -> new EntityNotFoundException("CLIENT role not found"));
 
         User user = User.builder()
                 .name(request.getName())
@@ -47,5 +50,21 @@ public class AuthService {
                 .phoneNumber(user.getPhoneNumber())
                 .roleName(user.getRole().getName())
                 .build();
+    }
+
+    public User getCurrentUser() {
+
+        Authentication authentication = SecurityContextHolder
+                .getContext()
+                .getAuthentication();
+
+        String email = authentication.getName();
+
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+    }
+
+    public Long getCurrentUserId() {
+        return getCurrentUser().getId();
     }
 }

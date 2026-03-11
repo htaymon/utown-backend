@@ -1,82 +1,116 @@
 package com.utown.utown_backend.service;
 
-import com.utown.utown_backend.dto.OrderRequestDTO;
+import com.utown.utown_backend.dto.request.OrderRequestDTO;
 import com.utown.utown_backend.dto.response.OrderResponseDTO;
-import com.utown.utown_backend.entity.Address;
-import com.utown.utown_backend.entity.Order;
-import com.utown.utown_backend.entity.Restaurant;
-import com.utown.utown_backend.entity.User;
+import com.utown.utown_backend.entity.*;
+import com.utown.utown_backend.enums.OrderStatus;
+import com.utown.utown_backend.enums.RestaurantStatus;
+import com.utown.utown_backend.exception.CartEmptyException;
+import com.utown.utown_backend.exception.RestaurantClosedException;
 import com.utown.utown_backend.mapper.OrderMapper;
-import com.utown.utown_backend.repository.AddressRepository;
-import com.utown.utown_backend.repository.OrderRepository;
-import com.utown.utown_backend.repository.RestaurantRepository;
-import com.utown.utown_backend.repository.UserRepository;
+import com.utown.utown_backend.repository.*;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import jakarta.persistence.EntityNotFoundException;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class OrderService {
 
     private final OrderRepository orderRepository;
-    private final UserRepository userRepository;
-    private final RestaurantRepository restaurantRepository;
+    private final CartRepository cartRepository;
     private final AddressRepository addressRepository;
+    private final UserRepository userRepository;
+    private final CartItemRepository cartItemRepository;
+    private final AuthService authService;
     private final OrderMapper mapper;
 
     public OrderResponseDTO create(OrderRequestDTO dto) {
 
-        User user = userRepository.findById(dto.getUserId())
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+        User user = authService.getCurrentUser();
 
-        Restaurant restaurant = restaurantRepository.findById(dto.getRestaurantId())
-                .orElseThrow(() -> new EntityNotFoundException("Restaurant not found"));
+        Cart cart = cartRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new EntityNotFoundException("Cart not found"));
+
+        List<CartItem> items = cartItemRepository.findByCartId(cart.getId());
+        if (items.isEmpty()) {
+            throw new CartEmptyException("Cart is empty. Cannot create order.");
+        }
+
+        Restaurant restaurant = cart.getRestaurant();
+
+        if (restaurant.getStatus() == RestaurantStatus.CLOSED) {
+            throw new RestaurantClosedException("Restaurant is closed");
+        }
 
         Address address = addressRepository.findById(dto.getDeliveryAddressId())
                 .orElseThrow(() -> new EntityNotFoundException("Address not found"));
 
-        Order order = mapper.toEntity(dto);
+        double totalPrice = cart.getCartItems()
+                .stream()
+                .mapToDouble(item ->
+                        item.getDish().getPrice() * item.getQuantity())
+                .sum();
 
-        order.setUser(user);
-        order.setRestaurant(restaurant);
-        order.setDeliveryAddress(address);
-        order.setOrderNo(UUID.randomUUID().toString());
+        Order order = Order.builder()
+                .user(user)
+                .restaurant(restaurant)
+                .deliveryAddress(address)
+                .orderNo(UUID.randomUUID().toString())
+                .status(OrderStatus.PENDING)
+                .totalPrice(totalPrice)
+                .build();
 
-        return mapper.toResponseDTO(orderRepository.save(order));
+        List<OrderItem> orderItems = cart.getCartItems()
+                .stream()
+                .map(ci -> OrderItem.builder()
+                        .order(order)
+                        .dish(ci.getDish())
+                        .quantity(ci.getQuantity())
+                        .price(ci.getDish().getPrice())
+                        .build())
+                .toList();
+
+        order.setOrderItems(orderItems);
+
+        Order savedOrder = orderRepository.save(order);
+
+        cart.getCartItems().clear();
+        cartRepository.save(cart);
+
+        return mapper.toResponseDTO(savedOrder);
     }
 
-    public OrderResponseDTO getById(Long id) {
-        Order order = orderRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Order not found"));
+    public List<OrderResponseDTO> getUserOrders(Long userId) {
 
-        return mapper.toResponseDTO(order);
-    }
-
-    public List<OrderResponseDTO> getAll() {
-        return orderRepository.findAll()
+        return orderRepository.findByUserId(userId)
                 .stream()
                 .map(mapper::toResponseDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
 
-    public OrderResponseDTO update(Long id, OrderRequestDTO dto) {
+    public List<OrderResponseDTO> getRestaurantOrders(Long restaurantId) {
 
-        Order existing = orderRepository.findById(id)
+        return orderRepository.findByRestaurantId(restaurantId)
+                .stream()
+                .map(mapper::toResponseDTO)
+                .toList();
+    }
+
+    public OrderResponseDTO cancelOrder(Long orderId) {
+
+        Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new EntityNotFoundException("Order not found"));
 
-        existing.setStatus(dto.getStatus());
-        existing.setTotalPrice(dto.getTotalPrice());
-        existing.setCookingTime(dto.getCookingTime());
+        if (order.getStatus() != OrderStatus.PENDING) {
+            throw new IllegalStateException("Order cannot be cancelled");
+        }
 
-        return mapper.toResponseDTO(orderRepository.save(existing));
-    }
+        order.setStatus(OrderStatus.CANCELLED);
 
-    public void delete(Long id) {
-        orderRepository.deleteById(id);
+        return mapper.toResponseDTO(orderRepository.save(order));
     }
 }

@@ -1,5 +1,6 @@
 package com.utown.utown_backend.dto.request;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 @Getter
@@ -9,6 +10,6 @@ import lombok.*;
 @Builder
 public class CartRequestDTO {
 
-    private Long userId;
+    @NotNull(message = "Restaurant ID is required")
     private Long restaurantId;
 }

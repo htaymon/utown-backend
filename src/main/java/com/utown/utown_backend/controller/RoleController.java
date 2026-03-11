@@ -3,10 +3,12 @@ package com.utown.utown_backend.controller;
 import com.utown.utown_backend.dto.request.RoleRequestDTO;
 import com.utown.utown_backend.dto.response.RoleResponseDTO;
 import com.utown.utown_backend.service.RoleService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -17,8 +19,11 @@ public class RoleController {
     private final RoleService service;
 
     @PostMapping
-    public ResponseEntity<RoleResponseDTO> create(@RequestBody RoleRequestDTO dto) {
-        return ResponseEntity.ok(service.create(dto));
+    public ResponseEntity<RoleResponseDTO> create(@Valid @RequestBody RoleRequestDTO dto) {
+
+        RoleResponseDTO response = service.create(dto);
+        URI location = URI.create("/roles/" + response.getId());
+        return ResponseEntity.created(location).body(response);
     }
 
     @GetMapping
@@ -34,7 +39,7 @@ public class RoleController {
     @PutMapping("/{id}")
     public ResponseEntity<RoleResponseDTO> update(
             @PathVariable Long id,
-            @RequestBody RoleRequestDTO dto) {
+            @Valid @RequestBody RoleRequestDTO dto) {
         return ResponseEntity.ok(service.update(id, dto));
     }
 

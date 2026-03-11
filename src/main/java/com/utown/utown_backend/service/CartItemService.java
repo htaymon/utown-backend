@@ -14,7 +14,6 @@ import org.springframework.stereotype.Service;
 import jakarta.persistence.EntityNotFoundException;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -33,9 +32,20 @@ public class CartItemService {
         Dish dish = dishRepository.findById(dto.getDishId())
                 .orElseThrow(() -> new EntityNotFoundException("Dish not found"));
 
-        CartItem item = mapper.toEntity(dto);
-        item.setCart(cart);
-        item.setDish(dish);
+        CartItem existingItem = cartItemRepository
+                .findByCartIdAndDishId(dto.getCartId(), dto.getDishId())
+                .orElse(null);
+
+        if (existingItem != null) {
+            existingItem.setQuantity(existingItem.getQuantity() + dto.getQuantity());
+            return mapper.toResponseDTO(cartItemRepository.save(existingItem));
+        }
+
+        CartItem item = CartItem.builder()
+                .cart(cart)
+                .dish(dish)
+                .quantity(dto.getQuantity())
+                .build();
 
         return mapper.toResponseDTO(cartItemRepository.save(item));
     }
@@ -44,6 +54,11 @@ public class CartItemService {
 
         CartItem existing = cartItemRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("CartItem not found"));
+
+        if (dto.getQuantity() <= 0) {
+            cartItemRepository.delete(existing);
+            return null;
+        }
 
         existing.setQuantity(dto.getQuantity());
 

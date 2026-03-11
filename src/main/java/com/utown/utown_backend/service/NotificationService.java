@@ -23,11 +23,11 @@ public class NotificationService {
     private final NotificationRepository repository;
     private final UserRepository userRepository;
     private final NotificationMapper mapper;
+    private final AuthService authService;
 
     public NotificationResponseDTO create(NotificationRequestDTO dto) {
 
-        User user = userRepository.findById(dto.getUserId())
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+        User user = authService.getCurrentUser();
 
         Notification notification = mapper.toEntity(dto);
         notification.setUser(user);
@@ -58,8 +58,7 @@ public class NotificationService {
         Notification notification = repository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Notification not found"));
 
-        User user = userRepository.findById(dto.getUserId())
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+        User user = authService.getCurrentUser();
 
         notification.setUser(user);
         notification.setMessage(dto.getMessage());

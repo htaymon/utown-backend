@@ -2,6 +2,7 @@ package com.utown.utown_backend.security;
 
 import com.utown.utown_backend.entity.User;
 import com.utown.utown_backend.repository.UserRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -19,7 +20,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() ->
-                        new UsernameNotFoundException("User not found"));
+                        new EntityNotFoundException("User not found"));
 
         return new CustomUserDetails(user);
     }

@@ -40,9 +40,13 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**").permitAll()
-                        .requestMatchers("/users/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/users/restaurant-admin/**").hasRole("RESTAURANT_ADMIN")
-                        .requestMatchers("/users/client/**").hasRole("CLIENT")
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/restaurant-admin/**").hasRole("RESTAURANT_ADMIN")
+                        .requestMatchers("/client/**").hasRole("CLIENT")
+
+                        .requestMatchers("/carts/**").hasRole("CLIENT")
+                        .requestMatchers("/cart-items/**").hasRole("CLIENT")
+                        .requestMatchers("/orders/**").hasAnyRole("CLIENT","RESTAURANT_ADMIN","ADMIN")
                         .anyRequest().authenticated()
                 )
 

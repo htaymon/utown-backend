@@ -20,10 +20,10 @@ public class AddressService {
     private final AddressRepository addressRepository;
     private final UserRepository userRepository;
     private final AddressMapper mapper;
+    private final AuthService authService;
 
     public AddressResponseDTO create(AddressRequestDTO dto) {
-        User user = userRepository.findById(dto.getUserId())
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+        User user = authService.getCurrentUser();
 
         Address address = Address.builder()
                 .street(dto.getStreet())
@@ -47,6 +47,9 @@ public class AddressService {
     }
 
     public AddressResponseDTO update(Long id, AddressRequestDTO dto) {
+
+        User currentUser = authService.getCurrentUser();
+
         Address address = addressRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Address not found"));
 
@@ -54,12 +57,6 @@ public class AddressService {
         address.setCity(dto.getCity());
         address.setState(dto.getState());
         address.setPostalCode(dto.getPostalCode());
-
-        if (dto.getUserId() != null) {
-            User user = userRepository.findById(dto.getUserId())
-                    .orElseThrow(() -> new EntityNotFoundException("User not found"));
-            address.setUser(user);
-        }
 
         return mapper.toResponseDTO(addressRepository.save(address));
     }
