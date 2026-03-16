@@ -6,6 +6,7 @@ import com.utown.utown_backend.service.RestaurantCategoryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -18,6 +19,7 @@ public class RestaurantCategoryController {
 
     private final RestaurantCategoryService service;
 
+    @PreAuthorize("hasAnyRole('ADMIN','RESTAURANT_ADMIN')")
     @PostMapping
     public ResponseEntity<RestaurantCategoryResponseDTO> create(@Valid @RequestBody RestaurantCategoryRequestDTO dto) {
         RestaurantCategoryResponseDTO response = service.create(dto);

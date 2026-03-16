@@ -24,7 +24,10 @@ public class GlobalExceptionHandler {
             CartEmptyException.class,
             CartAlreadyExistsException.class,
             InvalidRestaurantStatusException.class,
-            RestaurantClosedException.class
+            RestaurantClosedException.class,
+            DishNotAvailableException.class,
+            DishRestaurantMismatchException.class,
+            UserAddressMismatchException.class,
     })
     public ResponseEntity<ErrorResponseDTO> handleBadRequestExceptions(
             RuntimeException ex,

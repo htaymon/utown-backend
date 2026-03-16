@@ -5,7 +5,9 @@ import com.utown.utown_backend.dto.response.CartResponseDTO;
 import com.utown.utown_backend.entity.Cart;
 import com.utown.utown_backend.entity.Restaurant;
 import com.utown.utown_backend.entity.User;
+import com.utown.utown_backend.enums.RestaurantStatus;
 import com.utown.utown_backend.exception.CartAlreadyExistsException;
+import com.utown.utown_backend.exception.RestaurantClosedException;
 import com.utown.utown_backend.mapper.CartMapper;
 import com.utown.utown_backend.repository.CartRepository;
 import com.utown.utown_backend.repository.RestaurantRepository;
@@ -31,12 +33,17 @@ public class CartService {
     public CartResponseDTO create(CartRequestDTO dto) {
 
         User user = authService.getCurrentUser();
+
         if (cartRepository.existsByUserId(user.getId())) {
             throw new CartAlreadyExistsException("User already has a cart");
         }
 
         Restaurant restaurant = restaurantRepository.findById(dto.getRestaurantId())
                 .orElseThrow(() -> new EntityNotFoundException("Restaurant not found"));
+
+        if (restaurant.getStatus() != RestaurantStatus.OPEN) {
+            throw new RestaurantClosedException("Restaurant is closed");
+        }
 
         Cart cart = mapper.toEntity(dto);
         cart.setUser(user);
@@ -52,15 +59,12 @@ public class CartService {
         );
     }
 
-    public List<CartResponseDTO> getAll() {
+    public CartResponseDTO getMyCart() {
 
-        return mapper.toResponseList(cartRepository.findAll());
-    }
+        User user = authService.getCurrentUser();
 
-    public CartResponseDTO getCartByUser(Long userId) {
-
-        Cart cart = cartRepository.findByUserId(userId)
-                .orElseThrow(() -> new EntityNotFoundException("Cart not found for user"));
+        Cart cart = cartRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new EntityNotFoundException("Cart not found"));
 
         return mapper.toResponseDTO(cart);
     }
