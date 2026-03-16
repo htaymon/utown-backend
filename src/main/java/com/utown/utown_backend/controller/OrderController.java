@@ -20,12 +20,12 @@ import java.util.List;
 @RestController
 @RequestMapping("/orders")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('CLIENT')")
 public class OrderController {
 
     private final OrderService orderService;
     private final UserRepository userRepository;
 
+    @PreAuthorize("hasRole('CLIENT')")
     @PostMapping
     public ResponseEntity<OrderResponseDTO> create(@Valid @RequestBody OrderRequestDTO dto) {
         OrderResponseDTO response = orderService.create(dto);
@@ -55,6 +55,7 @@ public class OrderController {
         return orderService.getRestaurantOrders(restaurantId);
     }
 
+    @PreAuthorize("hasRole('CLIENT')")
     @PutMapping("/{id}/cancel")
     public OrderResponseDTO cancelOrder(@PathVariable Long id) {
         return orderService.cancelOrder(id);

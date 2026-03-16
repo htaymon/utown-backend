@@ -15,11 +15,11 @@ import java.util.List;
 @RestController
 @RequestMapping("/restaurant-categories")
 @RequiredArgsConstructor
-@PreAuthorize("hasAnyRole('ADMIN','RESTAURANT_ADMIN')")
 public class RestaurantCategoryController {
 
     private final RestaurantCategoryService service;
 
+    @PreAuthorize("hasAnyRole('ADMIN','RESTAURANT_ADMIN')")
     @PostMapping
     public ResponseEntity<RestaurantCategoryResponseDTO> create(@Valid @RequestBody RestaurantCategoryRequestDTO dto) {
         RestaurantCategoryResponseDTO response = service.create(dto);

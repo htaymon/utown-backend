@@ -3,15 +3,15 @@ package com.utown.utown_backend.service;
 import com.utown.utown_backend.dto.request.OrderRequestDTO;
 import com.utown.utown_backend.dto.response.OrderResponseDTO;
 import com.utown.utown_backend.entity.*;
+import com.utown.utown_backend.enums.DishStatus;
 import com.utown.utown_backend.enums.OrderStatus;
 import com.utown.utown_backend.enums.RestaurantStatus;
-import com.utown.utown_backend.exception.CartEmptyException;
-import com.utown.utown_backend.exception.InvalidOrderStatusException;
-import com.utown.utown_backend.exception.RestaurantClosedException;
+import com.utown.utown_backend.exception.*;
 import com.utown.utown_backend.mapper.OrderMapper;
 import com.utown.utown_backend.repository.*;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -24,7 +24,6 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final CartRepository cartRepository;
     private final AddressRepository addressRepository;
-    private final UserRepository userRepository;
     private final CartItemRepository cartItemRepository;
     private final AuthService authService;
     private final OrderMapper mapper;
@@ -41,14 +40,26 @@ public class OrderService {
             throw new CartEmptyException("Cart is empty. Cannot create order.");
         }
 
-        Restaurant restaurant = cart.getRestaurant();
 
+        Restaurant restaurant = cart.getRestaurant();
         if (restaurant.getStatus() == RestaurantStatus.CLOSED) {
             throw new RestaurantClosedException("Restaurant is closed");
         }
 
+        for (CartItem item : items) {
+            Dish dish = item.getDish();
+            if (dish.getStatus() != DishStatus.AVAILABLE) {
+                throw new DishNotAvailableException(
+                        "Dish not available: " + dish.getName());
+            }
+        }
+
         Address address = addressRepository.findById(dto.getDeliveryAddressId())
                 .orElseThrow(() -> new EntityNotFoundException("Address not found"));
+
+        if (!address.getUser().getId().equals(user.getId())) {
+            throw new UserAddressMismatchException("Address does not belong to the user");
+        }
 
         double totalPrice = cart.getCartItems()
                 .stream()

@@ -21,11 +21,9 @@ import java.util.List;
 @RestController
 @RequestMapping("/restaurants")
 @RequiredArgsConstructor
-@PreAuthorize("hasAnyRole('ADMIN','RESTAURANT_ADMIN')")
 public class RestaurantController {
 
     private final RestaurantService service;
-    private final OrderService orderService;
 
     @PostMapping
     @PreAuthorize("hasRole('RESTAURANT_ADMIN')")
@@ -46,11 +44,13 @@ public class RestaurantController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','RESTAURANT_ADMIN')")
     public RestaurantResponseDTO update(@PathVariable Long id, @Valid @RequestBody RestaurantRequestDTO dto) {
         return service.update(id, dto);
     }
 
     @PatchMapping("/{id}/status")
+    @PreAuthorize("hasAnyRole('ADMIN','RESTAURANT_ADMIN')")
     public ResponseEntity<RestaurantStatusResponseDTO> updateRestaurantStatus(
             @PathVariable Long id,
             @RequestBody RestaurantStatusUpdateDTO request,
@@ -62,6 +62,7 @@ public class RestaurantController {
         return ResponseEntity.ok(response);
     }
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','RESTAURANT_ADMIN')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         service.delete(id);

@@ -15,11 +15,11 @@ import java.util.List;
 @RestController
 @RequestMapping("/dish-categories")
 @RequiredArgsConstructor
-@PreAuthorize("hasAnyRole('ADMIN','RESTAURANT_ADMIN')")
 public class DishCategoryController {
 
     private final DishCategoryService service;
 
+    @PreAuthorize("hasAnyRole('ADMIN','RESTAURANT_ADMIN')")
     @PostMapping
     public ResponseEntity<DishCategoryResponseDTO> create(@Valid @RequestBody DishCategoryRequestDTO dto) {
         DishCategoryResponseDTO response = service.create(dto);
@@ -37,12 +37,14 @@ public class DishCategoryController {
         return service.getById(id);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN','RESTAURANT_ADMIN')")
     @PutMapping("/{id}")
     public DishCategoryResponseDTO update(@PathVariable Long id,
                                           @Valid @RequestBody DishCategoryRequestDTO dto) {
         return service.update(id, dto);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN','RESTAURANT_ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
 

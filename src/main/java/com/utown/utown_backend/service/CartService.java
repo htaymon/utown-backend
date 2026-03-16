@@ -59,15 +59,12 @@ public class CartService {
         );
     }
 
-    public List<CartResponseDTO> getAll() {
+    public CartResponseDTO getMyCart() {
 
-        return mapper.toResponseList(cartRepository.findAll());
-    }
+        User user = authService.getCurrentUser();
 
-    public CartResponseDTO getCartByUser(Long userId) {
-
-        Cart cart = cartRepository.findByUserId(userId)
-                .orElseThrow(() -> new EntityNotFoundException("Cart not found for user"));
+        Cart cart = cartRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new EntityNotFoundException("Cart not found"));
 
         return mapper.toResponseDTO(cart);
     }
