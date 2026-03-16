@@ -6,6 +6,7 @@ import com.utown.utown_backend.service.RestaurantCategoryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -14,6 +15,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/restaurant-categories")
 @RequiredArgsConstructor
+@PreAuthorize("hasAnyRole('ADMIN','RESTAURANT_ADMIN')")
 public class RestaurantCategoryController {
 
     private final RestaurantCategoryService service;

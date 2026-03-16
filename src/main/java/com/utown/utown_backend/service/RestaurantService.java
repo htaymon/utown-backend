@@ -1,7 +1,9 @@
 package com.utown.utown_backend.service;
 
 import com.utown.utown_backend.dto.request.RestaurantRequestDTO;
+import com.utown.utown_backend.dto.request.RestaurantStatusUpdateDTO;
 import com.utown.utown_backend.dto.response.RestaurantResponseDTO;
+import com.utown.utown_backend.dto.response.RestaurantStatusResponseDTO;
 import com.utown.utown_backend.entity.Restaurant;
 import com.utown.utown_backend.entity.RestaurantCategory;
 import com.utown.utown_backend.entity.User;
@@ -13,6 +15,8 @@ import com.utown.utown_backend.repository.RestaurantRepository;
 import com.utown.utown_backend.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -74,10 +78,39 @@ public class RestaurantService {
         restaurant.setName(dto.getName());
         restaurant.setDescription(dto.getDescription());
         restaurant.setMinimumOrder(dto.getMinimumOrder());
-        restaurant.setStatus(dto.getStatus());
         restaurantRepository.save(restaurant);
 
         return mapper.toResponseDTO(restaurant);
+    }
+
+    public RestaurantStatusResponseDTO updateRestaurantStatus(
+            Long restaurantId,
+            RestaurantStatusUpdateDTO request,
+            Authentication authentication) {
+
+        Restaurant restaurant = restaurantRepository.findById(restaurantId)
+                .orElseThrow(() -> new EntityNotFoundException("Restaurant not found"));
+
+        String email = authentication.getName();
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+
+        boolean isAdmin = user.getRole().getName().equals("ADMIN");
+        boolean isOwner = restaurant.getUser().getId().equals(user.getId());
+
+        if (!isAdmin && !isOwner) {
+            throw new AccessDeniedException("You are not allowed to update restaurant status");
+        }
+
+        restaurant.setStatus(request.getStatus());
+
+        restaurantRepository.save(restaurant);
+
+        return RestaurantStatusResponseDTO.builder()
+                .restaurantId(restaurant.getId())
+                .status(restaurant.getStatus())
+                .build();
     }
 
     public void delete(Long id) {

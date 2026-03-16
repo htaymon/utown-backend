@@ -12,9 +12,6 @@ import lombok.*;
 @Builder
 public class RestaurantRequestDTO {
 
-    @NotNull(message = "User ID is required")
-    private Long userId;
-
     @NotNull(message = "Restaurant Category ID is required")
     private Long restaurantCategoryId;
 

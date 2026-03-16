@@ -6,6 +6,7 @@ import com.utown.utown_backend.entity.*;
 import com.utown.utown_backend.enums.OrderStatus;
 import com.utown.utown_backend.enums.RestaurantStatus;
 import com.utown.utown_backend.exception.CartEmptyException;
+import com.utown.utown_backend.exception.InvalidOrderStatusException;
 import com.utown.utown_backend.exception.RestaurantClosedException;
 import com.utown.utown_backend.mapper.OrderMapper;
 import com.utown.utown_backend.repository.*;
@@ -106,7 +107,9 @@ public class OrderService {
                 .orElseThrow(() -> new EntityNotFoundException("Order not found"));
 
         if (order.getStatus() != OrderStatus.PENDING) {
-            throw new IllegalStateException("Order cannot be cancelled");
+            throw new InvalidOrderStatusException(
+                    "Only PENDING orders can be cancelled"
+            );
         }
 
         order.setStatus(OrderStatus.CANCELLED);

@@ -5,6 +5,11 @@ import com.utown.utown_backend.dto.response.CartItemResponseDTO;
 import com.utown.utown_backend.entity.Cart;
 import com.utown.utown_backend.entity.CartItem;
 import com.utown.utown_backend.entity.Dish;
+import com.utown.utown_backend.enums.DishStatus;
+import com.utown.utown_backend.enums.RestaurantStatus;
+import com.utown.utown_backend.exception.DishNotAvailableException;
+import com.utown.utown_backend.exception.DishRestaurantMismatchException;
+import com.utown.utown_backend.exception.RestaurantClosedException;
 import com.utown.utown_backend.mapper.CartItemMapper;
 import com.utown.utown_backend.repository.CartItemRepository;
 import com.utown.utown_backend.repository.CartRepository;
@@ -31,6 +36,18 @@ public class CartItemService {
 
         Dish dish = dishRepository.findById(dto.getDishId())
                 .orElseThrow(() -> new EntityNotFoundException("Dish not found"));
+
+        if (cart.getRestaurant().getStatus() != RestaurantStatus.OPEN) {
+            throw new RestaurantClosedException("Restaurant is closed");
+        }
+
+        if (dish.getStatus() != DishStatus.AVAILABLE) {
+            throw new DishNotAvailableException("Dish is not available");
+        }
+
+        if (!dish.getRestaurant().getId().equals(cart.getRestaurant().getId())) {
+            throw new DishRestaurantMismatchException("Dish does not belong to this restaurant");
+        }
 
         CartItem existingItem = cartItemRepository
                 .findByCartIdAndDishId(dto.getCartId(), dto.getDishId())

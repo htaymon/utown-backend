@@ -20,6 +20,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/orders")
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('CLIENT')")
 public class OrderController {
 
     private final OrderService orderService;
