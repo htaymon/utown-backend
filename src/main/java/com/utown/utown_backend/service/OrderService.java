@@ -30,6 +30,7 @@ public class OrderService {
     private final CartRepository cartRepository;
     private final AddressRepository addressRepository;
     private final CartItemRepository cartItemRepository;
+    private final RestaurantRepository restaurantRepository;
     private final AuthService authService;
     private final OrderMapper mapper;
 
@@ -119,7 +120,7 @@ public class OrderService {
         boolean isRestaurantOwner =
                 order.getRestaurant().getUser().getId().equals(user.getId());
 
-        boolean isAdmin = user.getRole() != null && "ADMIN".equals(user.getRole().getName());
+        boolean isAdmin = user.getRole() != null && user.getRole().getName().equals("ADMIN");
 
         if (!isOwner && !isRestaurantOwner && !isAdmin) {
             throw new AccessDeniedException("Not authorized to view this order");
@@ -129,6 +130,18 @@ public class OrderService {
     }
 
     public List<OrderResponseDTO> getRestaurantOrders(Long restaurantId,int page, int size) {
+
+        User user = authService.getCurrentUser();
+        Restaurant restaurant = restaurantRepository.findById(restaurantId)
+                .orElseThrow(() -> new EntityNotFoundException("Restaurant not found"));
+
+        boolean isOwner = restaurant.getUser().getId().equals(user.getId());
+
+        boolean isAdmin = user.getRole() != null && user.getRole().getName().equals("ADMIN");
+
+        if (!isAdmin && !isOwner) {
+            throw new AccessDeniedException("Not authorized to view these orders");
+        }
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         return orderRepository.findByRestaurantId(restaurantId, pageable)
@@ -141,8 +154,15 @@ public class OrderService {
         User user = authService.getCurrentUser();
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new EntityNotFoundException("Order not found"));
+
         if (!order.getRestaurant().getUser().getId().equals(user.getId())) {
             throw new AccessDeniedException("Not authorized to update this order");
+        }
+
+        OrderStatus currentStatus = order.getStatus();
+
+        if (currentStatus == OrderStatus.COMPLETED) {
+            throw new InvalidOrderStatusException("Cannot change status of a completed order");
         }
         order.setStatus(request.getStatus());
 

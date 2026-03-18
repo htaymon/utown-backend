@@ -55,7 +55,7 @@ public class OrderController {
         return ResponseEntity.ok(orderService.getOrderDetail(id));
     }
 
-    @PreAuthorize("hasRole('RESTAURANT_ADMIN')")
+    @PreAuthorize("hasAnyRole('CLIENT','RESTAURANT_ADMIN','ADMIN')")
     @GetMapping("/restaurant/{restaurantId}")
     public List<OrderResponseDTO> getRestaurantOrders(
             @PathVariable Long restaurantId,
