@@ -37,8 +37,6 @@ public class Order extends BaseEntity {
     @Column(nullable = false)
     private Double totalPrice;
 
-    private Integer cookingTime;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "delivery_address_id", nullable = false)
     private Address deliveryAddress;

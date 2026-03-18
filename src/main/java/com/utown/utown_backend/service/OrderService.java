@@ -1,7 +1,9 @@
 package com.utown.utown_backend.service;
 
 import com.utown.utown_backend.dto.request.OrderRequestDTO;
+import com.utown.utown_backend.dto.request.OrderStatusUpdateDTO;
 import com.utown.utown_backend.dto.response.OrderResponseDTO;
+import com.utown.utown_backend.dto.response.OrderStatusResponseDTO;
 import com.utown.utown_backend.entity.*;
 import com.utown.utown_backend.enums.DishStatus;
 import com.utown.utown_backend.enums.OrderStatus;
@@ -11,6 +13,9 @@ import com.utown.utown_backend.mapper.OrderMapper;
 import com.utown.utown_backend.repository.*;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
@@ -39,7 +44,6 @@ public class OrderService {
         if (items.isEmpty()) {
             throw new CartEmptyException("Cart is empty. Cannot create order.");
         }
-
 
         Restaurant restaurant = cart.getRestaurant();
         if (restaurant.getStatus() == RestaurantStatus.CLOSED) {
@@ -96,35 +100,70 @@ public class OrderService {
         return mapper.toResponseDTO(savedOrder);
     }
 
-    public List<OrderResponseDTO> getUserOrders(Long userId) {
+    public List<OrderResponseDTO> getUserOrders(Long userId, int page, int size) {
 
-        return orderRepository.findByUserId(userId)
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        return orderRepository.findByUserId(userId, pageable)
                 .stream()
                 .map(mapper::toResponseDTO)
                 .toList();
     }
 
-    public List<OrderResponseDTO> getRestaurantOrders(Long restaurantId) {
+    public OrderResponseDTO getOrderDetail(Long orderId) {
+        User user = authService.getCurrentUser();
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new EntityNotFoundException("Order not found"));
 
-        return orderRepository.findByRestaurantId(restaurantId)
+        boolean isOwner = order.getUser().getId().equals(user.getId());
+
+        boolean isRestaurantOwner =
+                order.getRestaurant().getUser().getId().equals(user.getId());
+
+        boolean isAdmin = user.getRole() != null && "ADMIN".equals(user.getRole().getName());
+
+        if (!isOwner && !isRestaurantOwner && !isAdmin) {
+            throw new AccessDeniedException("Not authorized to view this order");
+        }
+
+        return mapper.toResponseDTO(order);
+    }
+
+    public List<OrderResponseDTO> getRestaurantOrders(Long restaurantId,int page, int size) {
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        return orderRepository.findByRestaurantId(restaurantId, pageable)
                 .stream()
                 .map(mapper::toResponseDTO)
                 .toList();
+    }
+
+    public OrderStatusResponseDTO updateOrderStatus(Long orderId, OrderStatusUpdateDTO request) {
+        User user = authService.getCurrentUser();
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new EntityNotFoundException("Order not found"));
+        if (!order.getRestaurant().getUser().getId().equals(user.getId())) {
+            throw new AccessDeniedException("Not authorized to update this order");
+        }
+        order.setStatus(request.getStatus());
+
+        orderRepository.save(order);
+
+        return OrderStatusResponseDTO.builder()
+                .orderId(order.getId())
+                .status(order.getStatus())
+                .build();
     }
 
     public OrderResponseDTO cancelOrder(Long orderId) {
 
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new EntityNotFoundException("Order not found"));
-
         if (order.getStatus() != OrderStatus.PENDING) {
             throw new InvalidOrderStatusException(
                     "Only PENDING orders can be cancelled"
             );
         }
-
         order.setStatus(OrderStatus.CANCELLED);
-
         return mapper.toResponseDTO(orderRepository.save(order));
     }
 }

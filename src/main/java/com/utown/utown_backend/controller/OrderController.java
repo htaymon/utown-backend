@@ -1,7 +1,9 @@
 package com.utown.utown_backend.controller;
 
 import com.utown.utown_backend.dto.request.OrderRequestDTO;
+import com.utown.utown_backend.dto.request.OrderStatusUpdateDTO;
 import com.utown.utown_backend.dto.response.OrderResponseDTO;
+import com.utown.utown_backend.dto.response.OrderStatusResponseDTO;
 import com.utown.utown_backend.entity.User;
 import com.utown.utown_backend.repository.UserRepository;
 import com.utown.utown_backend.service.OrderService;
@@ -33,31 +35,48 @@ public class OrderController {
         return ResponseEntity.created(location).body(response);
     }
 
+    @PreAuthorize("hasRole('CLIENT')")
     @GetMapping("/my")
-    public List<OrderResponseDTO> getMyOrders() {
+    public List<OrderResponseDTO> getMyOrders(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
 
         Authentication authentication =
                 SecurityContextHolder.getContext().getAuthentication();
-
         String email = authentication.getName();
-
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
+        return orderService.getUserOrders(user.getId(),page, size);
+    }
 
-        return orderService.getUserOrders(user.getId());
+    @PreAuthorize("hasAnyRole('CLIENT','RESTAURANT_ADMIN','ADMIN')")
+    @GetMapping("/{id}")
+    public ResponseEntity<OrderResponseDTO> getOrder(@PathVariable Long id) {
+        return ResponseEntity.ok(orderService.getOrderDetail(id));
     }
 
     @PreAuthorize("hasRole('RESTAURANT_ADMIN')")
     @GetMapping("/restaurant/{restaurantId}")
     public List<OrderResponseDTO> getRestaurantOrders(
-            @PathVariable Long restaurantId) {
+            @PathVariable Long restaurantId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
 
-        return orderService.getRestaurantOrders(restaurantId);
+        return orderService.getRestaurantOrders(restaurantId,page,size);
     }
 
     @PreAuthorize("hasRole('CLIENT')")
     @PutMapping("/{id}/cancel")
     public OrderResponseDTO cancelOrder(@PathVariable Long id) {
         return orderService.cancelOrder(id);
+    }
+
+    @PreAuthorize("hasRole('RESTAURANT_ADMIN')")
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<OrderStatusResponseDTO> updateStatus(
+            @PathVariable Long id,
+            @RequestBody OrderStatusUpdateDTO request) {
+
+        return ResponseEntity.ok(orderService.updateOrderStatus(id,request));
     }
 }

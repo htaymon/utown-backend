@@ -31,12 +31,12 @@ public class CartController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('CLIENT')")
+    @PreAuthorize("hasAnyRole('ADMIN','RESTAURANT_ADMIN')")
     public CartResponseDTO getById(@PathVariable Long id) {
         return service.getById(id);
     }
 
-    @GetMapping
+    @GetMapping("/my")
     @PreAuthorize("hasRole('CLIENT')")
     public CartResponseDTO getMyCart() {
         return service.getMyCart();

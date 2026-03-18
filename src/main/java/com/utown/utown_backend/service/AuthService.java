@@ -2,6 +2,7 @@ package com.utown.utown_backend.service;
 
 import com.utown.utown_backend.dto.request.RegisterRequestDTO;
 import com.utown.utown_backend.dto.response.UserResponseDTO;
+import com.utown.utown_backend.entity.Restaurant;
 import com.utown.utown_backend.entity.Role;
 import com.utown.utown_backend.entity.User;
 import com.utown.utown_backend.exception.EmailAlreadyExistsException;
@@ -67,4 +68,5 @@ public class AuthService {
     public Long getCurrentUserId() {
         return getCurrentUser().getId();
     }
+
 }
