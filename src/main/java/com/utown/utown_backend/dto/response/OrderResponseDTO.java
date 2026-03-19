@@ -26,8 +26,6 @@ public class OrderResponseDTO {
 
     private Double totalPrice;
 
-    private Integer cookingTime;
-
     private List<OrderItemResponseDTO> items;
 
 }
