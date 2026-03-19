@@ -65,13 +65,13 @@ public class OrderController {
         return orderService.getRestaurantOrders(restaurantId,page,size);
     }
 
-    @PreAuthorize("hasRole('CLIENT')")
+    @PreAuthorize("hasAnyRole('CLIENT','RESTAURANT_ADMIN','ADMIN')")
     @PutMapping("/{id}/cancel")
     public OrderResponseDTO cancelOrder(@PathVariable Long id) {
         return orderService.cancelOrder(id);
     }
 
-    @PreAuthorize("hasRole('RESTAURANT_ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','RESTAURANT_ADMIN')")
     @PatchMapping("/{id}/status")
     public ResponseEntity<OrderStatusResponseDTO> updateStatus(
             @PathVariable Long id,

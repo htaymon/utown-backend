@@ -2,17 +2,14 @@ package com.utown.utown_backend.controller;
 
 import com.utown.utown_backend.dto.request.RestaurantRequestDTO;
 import com.utown.utown_backend.dto.request.RestaurantStatusUpdateDTO;
-import com.utown.utown_backend.dto.response.OrderResponseDTO;
 import com.utown.utown_backend.dto.response.RestaurantResponseDTO;
 import com.utown.utown_backend.dto.response.RestaurantStatusResponseDTO;
-import com.utown.utown_backend.service.OrderService;
 import com.utown.utown_backend.service.RestaurantService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -53,11 +50,10 @@ public class RestaurantController {
     @PreAuthorize("hasAnyRole('ADMIN','RESTAURANT_ADMIN')")
     public ResponseEntity<RestaurantStatusResponseDTO> updateRestaurantStatus(
             @PathVariable Long id,
-            @RequestBody RestaurantStatusUpdateDTO request,
-            Authentication authentication) {
+            @RequestBody RestaurantStatusUpdateDTO request) {
 
         RestaurantStatusResponseDTO response =
-                service.updateRestaurantStatus(id, request, authentication);
+                service.updateRestaurantStatus(id, request);
 
         return ResponseEntity.ok(response);
     }

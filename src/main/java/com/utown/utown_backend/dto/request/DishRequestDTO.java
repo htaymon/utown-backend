@@ -30,7 +30,7 @@ public class DishRequestDTO {
     @NotNull(message = "Image is required")
     private String image;
 
-    @NotBlank(message = "Status is required")
+    @NotNull(message = "Status is required")
     private DishStatus status;
 
     @NotNull(message = "Priority is required")
