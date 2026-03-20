@@ -115,16 +115,7 @@ public class OrderService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new EntityNotFoundException("Order not found"));
 
-        boolean isOwner = order.getUser().getId().equals(user.getId());
-
-        boolean isRestaurantOwner =
-                order.getRestaurant().getUser().getId().equals(user.getId());
-
-        boolean isAdmin = user.getRole() != null && user.getRole().getName().equals("ADMIN");
-
-        if (!isOwner && !isRestaurantOwner && !isAdmin) {
-            throw new AccessDeniedException("Not authorized to view this order");
-        }
+        checkOrderAccess(order, user);
 
         return mapper.toResponseDTO(order);
     }
@@ -155,8 +146,10 @@ public class OrderService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new EntityNotFoundException("Order not found"));
 
-        if (!order.getRestaurant().getUser().getId().equals(user.getId())) {
-            throw new AccessDeniedException("Not authorized to update this order");
+        boolean isAdmin = user.getRole().getName().equals("ADMIN");
+        boolean isOwner = order.getRestaurant().getUser().getId().equals(user.getId());
+        if (!isAdmin && !isOwner) {
+            throw new AccessDeniedException("You are not allowed to update order status");
         }
 
         OrderStatus currentStatus = order.getStatus();
@@ -178,6 +171,10 @@ public class OrderService {
 
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new EntityNotFoundException("Order not found"));
+
+        User user = authService.getCurrentUser();
+
+        checkOrderAccess(order, user);
         if (order.getStatus() != OrderStatus.PENDING) {
             throw new InvalidOrderStatusException(
                     "Only PENDING orders can be cancelled"
@@ -185,5 +182,15 @@ public class OrderService {
         }
         order.setStatus(OrderStatus.CANCELLED);
         return mapper.toResponseDTO(orderRepository.save(order));
+    }
+
+    private void checkOrderAccess(Order order, User user) {
+        boolean isClient = order.getUser().getId().equals(user.getId());
+        boolean isRestaurantOwner = order.getRestaurant().getUser().getId().equals(user.getId());
+        boolean isAdmin = "ADMIN".equals(user.getRole().getName());
+
+        if (!(isClient || isRestaurantOwner || isAdmin)) {
+            throw new AccessDeniedException("Not authorized for this order");
+        }
     }
 }

@@ -5,6 +5,7 @@ import com.utown.utown_backend.dto.response.CartItemResponseDTO;
 import com.utown.utown_backend.entity.Cart;
 import com.utown.utown_backend.entity.CartItem;
 import com.utown.utown_backend.entity.Dish;
+import com.utown.utown_backend.entity.User;
 import com.utown.utown_backend.enums.DishStatus;
 import com.utown.utown_backend.enums.RestaurantStatus;
 import com.utown.utown_backend.exception.DishNotAvailableException;
@@ -15,6 +16,7 @@ import com.utown.utown_backend.repository.CartItemRepository;
 import com.utown.utown_backend.repository.CartRepository;
 import com.utown.utown_backend.repository.DishRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import jakarta.persistence.EntityNotFoundException;
 
@@ -28,9 +30,11 @@ public class CartItemService {
     private final CartRepository cartRepository;
     private final DishRepository dishRepository;
     private final CartItemMapper mapper;
+    private final AuthService authService;
 
     public CartItemResponseDTO create(CartItemRequestDTO dto) {
 
+        User user=authService.getCurrentUser();
         Cart cart = cartRepository.findById(dto.getCartId())
                 .orElseThrow(() -> new EntityNotFoundException("Cart not found"));
 
@@ -49,6 +53,9 @@ public class CartItemService {
             throw new DishRestaurantMismatchException("Dish does not belong to this restaurant");
         }
 
+        if (!cart.getUser().getId().equals(user.getId())) {
+            throw new AccessDeniedException("You cannot modify another user's cart");
+        }
         CartItem existingItem = cartItemRepository
                 .findByCartIdAndDishId(dto.getCartId(), dto.getDishId())
                 .orElse(null);
@@ -72,9 +79,27 @@ public class CartItemService {
         CartItem existing = cartItemRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("CartItem not found"));
 
-        if (dto.getQuantity() <= 0) {
-            cartItemRepository.delete(existing);
-            return null;
+        User user=authService.getCurrentUser();
+        Cart cart = cartRepository.findById(dto.getCartId())
+                .orElseThrow(() -> new EntityNotFoundException("Cart not found"));
+
+        Dish dish = dishRepository.findById(dto.getDishId())
+                .orElseThrow(() -> new EntityNotFoundException("Dish not found"));
+
+        if (cart.getRestaurant().getStatus() != RestaurantStatus.OPEN) {
+            throw new RestaurantClosedException("Restaurant is closed");
+        }
+
+        if (dish.getStatus() != DishStatus.AVAILABLE) {
+            throw new DishNotAvailableException("Dish is not available");
+        }
+
+        if (!dish.getRestaurant().getId().equals(cart.getRestaurant().getId())) {
+            throw new DishRestaurantMismatchException("Dish does not belong to this restaurant");
+        }
+
+        if (!cart.getUser().getId().equals(user.getId())) {
+            throw new AccessDeniedException("You cannot modify another user's cart");
         }
 
         existing.setQuantity(dto.getQuantity());
@@ -83,10 +108,21 @@ public class CartItemService {
     }
 
     public void delete(Long id) {
+        User user=authService.getCurrentUser();
+        CartItem cartItem = cartItemRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("CartItem not found"));
+
+        if (!cartItem.getCart().getUser().getId().equals(user.getId())) {
+            throw new AccessDeniedException("You cannot modify another user's cart");
+        }
+
         cartItemRepository.deleteById(id);
     }
 
     public List<CartItemResponseDTO> getAll() {
-        return mapper.toResponseList(cartItemRepository.findAll());
+        User user=authService.getCurrentUser();
+        Cart cart = cartRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new EntityNotFoundException("Cart not found"));
+        return mapper.toResponseList(cart.getCartItems());
     }
 }
