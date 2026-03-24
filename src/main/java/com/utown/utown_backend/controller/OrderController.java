@@ -4,16 +4,11 @@ import com.utown.utown_backend.dto.request.OrderRequestDTO;
 import com.utown.utown_backend.dto.request.OrderStatusUpdateDTO;
 import com.utown.utown_backend.dto.response.OrderResponseDTO;
 import com.utown.utown_backend.dto.response.OrderStatusResponseDTO;
-import com.utown.utown_backend.entity.User;
-import com.utown.utown_backend.repository.UserRepository;
 import com.utown.utown_backend.service.OrderService;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -25,7 +20,6 @@ import java.util.List;
 public class OrderController {
 
     private final OrderService orderService;
-    private final UserRepository userRepository;
 
     @PreAuthorize("hasRole('CLIENT')")
     @PostMapping
@@ -41,12 +35,7 @@ public class OrderController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
 
-        Authentication authentication =
-                SecurityContextHolder.getContext().getAuthentication();
-        String email = authentication.getName();
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
-        return orderService.getUserOrders(user.getId(),page, size);
+        return orderService.getUserOrders(page, size);
     }
 
     @PreAuthorize("hasAnyRole('CLIENT','RESTAURANT_ADMIN','ADMIN')")

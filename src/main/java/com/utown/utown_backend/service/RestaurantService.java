@@ -14,6 +14,7 @@ import com.utown.utown_backend.repository.RestaurantCategoryRepository;
 import com.utown.utown_backend.repository.RestaurantRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +22,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class RestaurantService {
 
     private final RestaurantRepository restaurantRepository;
@@ -32,6 +34,9 @@ public class RestaurantService {
 
         User user = authService.getCurrentUser();
 
+        log.info("CREATE_RESTAURANT request: userId={}, categoryId={}",
+                user.getId(), dto.getRestaurantCategoryId());
+
         RestaurantCategory category = categoryRepository.findById(dto.getRestaurantCategoryId())
                 .orElseThrow(() -> new EntityNotFoundException("Category not found"));
 
@@ -39,6 +44,8 @@ public class RestaurantService {
         try {
             status = RestaurantStatus.valueOf(dto.getStatus().toString());
         } catch (IllegalArgumentException e) {
+            log.warn("CREATE_RESTAURANT failed: reason=invalid_status, userId={}",
+                    user.getId());
             throw new InvalidRestaurantStatusException("Invalid restaurant status");
         }
 
@@ -52,7 +59,10 @@ public class RestaurantService {
                 .status(status)
                 .build();
 
-        restaurantRepository.save(restaurant);
+        Restaurant saved = restaurantRepository.save(restaurant);
+
+        log.info("CREATE_RESTAURANT success: restaurantId={}, userId={}",
+                saved.getId(), user.getId());
 
         return mapper.toResponseDTO(restaurant);
     }
@@ -63,14 +73,18 @@ public class RestaurantService {
     }
 
     public RestaurantResponseDTO getById(Long id) {
+        log.info("GET_RESTAURANT request: restaurantId={}", id);
         Restaurant restaurant = restaurantRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Restaurant not found with id: " + id));
+        log.info("GET_RESTAURANT success: restaurantId={}", id);
         return mapper.toResponseDTO(restaurant);
     }
 
     public RestaurantResponseDTO update(Long id, RestaurantRequestDTO dto) {
 
         User user = authService.getCurrentUser();
+        log.info("UPDATE_RESTAURANT request: restaurantId={}, userId={}",
+                id, user.getId());
         Restaurant restaurant = restaurantRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Restaurant not found"));
 
@@ -80,7 +94,8 @@ public class RestaurantService {
         restaurant.setDescription(dto.getDescription());
         restaurant.setMinimumOrder(dto.getMinimumOrder());
         restaurantRepository.save(restaurant);
-
+        log.info("UPDATE_RESTAURANT success: restaurantId={}, userId={}",
+                id, user.getId());
         return mapper.toResponseDTO(restaurant);
     }
 
@@ -88,16 +103,21 @@ public class RestaurantService {
             Long restaurantId,
             RestaurantStatusUpdateDTO request) {
 
+        User user = authService.getCurrentUser();
+        log.info("UPDATE_RESTAURANT_STATUS request: restaurantId={}, userId={}, status={}",
+                restaurantId, user.getId(), request.getStatus());
+
         Restaurant restaurant = restaurantRepository.findById(restaurantId)
                 .orElseThrow(() -> new EntityNotFoundException("Restaurant not found"));
-
-        User user = authService.getCurrentUser();
 
         checkRestaurantAccess(restaurant, user);
 
         restaurant.setStatus(request.getStatus());
 
         restaurantRepository.save(restaurant);
+
+        log.info("UPDATE_RESTAURANT_STATUS success: restaurantId={}, status={}",
+                restaurantId, request.getStatus());
 
         return RestaurantStatusResponseDTO.builder()
                 .restaurantId(restaurant.getId())
@@ -107,18 +127,26 @@ public class RestaurantService {
 
     public void delete(Long id) {
         User user = authService.getCurrentUser();
+
+        log.info("DELETE_RESTAURANT request: restaurantId={}, userId={}",
+                id, user.getId());
+
         Restaurant restaurant = restaurantRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Restaurant not found"));
         checkRestaurantAccess(restaurant, user);
 
         restaurantRepository.delete(restaurant);
+        log.info("DELETE_RESTAURANT success: restaurantId={}, userId={}",
+                id, user.getId());
     }
 
     private void checkRestaurantAccess(Restaurant restaurant, User user) {
         boolean isOwner = restaurant.getUser().getId().equals(user.getId());
-        boolean isAdmin = "ADMIN".equals(user.getRole().getName());
+        boolean isAdmin = user.getRole() != null && "ADMIN".equals(user.getRole().getName());
 
         if (!isOwner && !isAdmin) {
+            log.warn("RESTAURANT_ACCESS_DENIED: restaurantId={}, userId={}",
+                    restaurant.getId(), user.getId());
             throw new AccessDeniedException("Access denied");
         }
     }

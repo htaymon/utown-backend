@@ -18,7 +18,6 @@ import java.util.List;
 public class AddressService {
 
     private final AddressRepository addressRepository;
-    private final UserRepository userRepository;
     private final AddressMapper mapper;
     private final AuthService authService;
 
@@ -47,8 +46,6 @@ public class AddressService {
     }
 
     public AddressResponseDTO update(Long id, AddressRequestDTO dto) {
-
-        User currentUser = authService.getCurrentUser();
 
         Address address = addressRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Address not found"));
