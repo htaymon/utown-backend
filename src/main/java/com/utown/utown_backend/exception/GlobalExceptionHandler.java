@@ -3,6 +3,7 @@ package com.utown.utown_backend.exception;
 import com.utown.utown_backend.dto.response.ErrorResponseDTO;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,14 +11,12 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.context.request.WebRequest;
 
 import org.springframework.security.access.AccessDeniedException;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
 
 @RestControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
 
     @ExceptionHandler({
@@ -32,127 +31,135 @@ public class GlobalExceptionHandler {
     })
     public ResponseEntity<ErrorResponseDTO> handleBadRequestExceptions(
             RuntimeException ex,
-            WebRequest request) {
+            HttpServletRequest request) {
 
-        ErrorResponseDTO errorResponse = new ErrorResponseDTO(
-                request.getDescription(false),
-                ex.getMessage(),
-                HttpStatus.BAD_REQUEST.value(),
-                LocalDateTime.now()
+        log.warn("Bad request: path={}, message={}",
+                request.getRequestURI(), ex.getMessage());
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                buildError("BAD_REQUEST", ex.getMessage(), request)
         );
-
-        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(EmailAlreadyExistsException.class)
-    public ResponseEntity<ErrorResponse> handleEmailAlreadyExistsException(
+    public ResponseEntity<ErrorResponseDTO> handleEmailAlreadyExistsException(
             EmailAlreadyExistsException ex,
-            WebRequest request) {
+            HttpServletRequest request) {
 
-        ErrorResponse errorResponse = new ErrorResponse(
-                request.getDescription(false),
-                ex.getMessage(),
-                HttpStatus.CONFLICT.value(),
-                LocalDateTime.now()
+        log.warn("Email already exists: path={}, message={}",
+                request.getRequestURI(), ex.getMessage());
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(
+                buildError("EMAIL_ALREADY_EXISTS", ex.getMessage(), request)
         );
-
-        return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
     }
 
     @ExceptionHandler(EntityNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleEntityNotFound(
+    public ResponseEntity<ErrorResponseDTO> handleEntityNotFound(
             EntityNotFoundException ex,
             HttpServletRequest request) {
 
-        ErrorResponse error = new ErrorResponse(
-                request.getRequestURI(),
-                ex.getMessage(),
-                HttpStatus.NOT_FOUND.value(),
-                LocalDateTime.now()
+        log.warn("Entity not found: path={}, message={}",
+                request.getRequestURI(), ex.getMessage());
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                buildError("NOT_FOUND", ex.getMessage(), request)
         );
 
-        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, Object>> handleValidationErrors(
-            MethodArgumentNotValidException ex) {
+    public ResponseEntity<ErrorResponseDTO> handleValidationErrors(
+            MethodArgumentNotValidException ex,
+            HttpServletRequest request) {
 
-        Map<String, String> fieldErrors = new HashMap<>();
+        String message = ex.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .map(error -> error.getField() + ": " + error.getDefaultMessage())
+                .reduce((a, b) -> a + ", " + b)
+                .orElse("Validation error");
 
-        ex.getBindingResult().getFieldErrors()
-                .forEach(error ->
-                        fieldErrors.put(error.getField(), error.getDefaultMessage())
-                );
+        log.warn("Validation failed: path={}, message={}",
+                request.getRequestURI(), message);
 
-        Map<String, Object> response = new HashMap<>();
-        response.put("status", 400);
-        response.put("errors", fieldErrors);
-        response.put("timestamp", LocalDateTime.now());
-
-        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        return ResponseEntity.badRequest().body(
+                buildError("VALIDATION_ERROR", message, request)
+        );
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<ErrorResponse> handleJsonError(
+    public ResponseEntity<ErrorResponseDTO> handleJsonError(
             HttpMessageNotReadableException ex,
             HttpServletRequest request) {
 
-        ErrorResponse error = new ErrorResponse(
-                request.getRequestURI(),
-                "Malformed JSON request",
-                HttpStatus.BAD_REQUEST.value(),
-                LocalDateTime.now()
-        );
+        log.warn("Malformed JSON: path={}",
+                request.getRequestURI(), ex);
 
-        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+        return ResponseEntity.badRequest().body(
+                buildError("INVALID_JSON", "Malformed JSON request", request)
+        );
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity<ErrorResponse> handleDataIntegrity(
+    public ResponseEntity<ErrorResponseDTO> handleDataIntegrity(
             DataIntegrityViolationException ex,
             HttpServletRequest request) {
 
-        ErrorResponse error = new ErrorResponse(
-                request.getRequestURI(),
-                "Database constraint violation",
-                HttpStatus.CONFLICT.value(),
-                LocalDateTime.now()
+        log.error("Database constraint violation: path={}",
+                request.getRequestURI(), ex);
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(
+                buildError("DATA_INTEGRITY_ERROR", "Database constraint violation", request)
         );
 
-        return new ResponseEntity<>(error, HttpStatus.CONFLICT);
     }
 
     @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<ErrorResponse> handleAccessDenied(
+    public ResponseEntity<ErrorResponseDTO> handleAccessDenied(
             AccessDeniedException ex,
             HttpServletRequest request) {
 
-        ErrorResponse error = new ErrorResponse(
-                request.getRequestURI(),
-                "Access denied",
-                HttpStatus.FORBIDDEN.value(),
-                LocalDateTime.now()
+        log.warn("Access denied: path={}, message={}",
+                request.getRequestURI(), ex.getMessage());
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                buildError("ACCESS_DENIED", "Access denied", request)
         );
 
-        return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleGlobalException(
+    public ResponseEntity<ErrorResponseDTO> handleGlobalException(
             Exception ex,
             HttpServletRequest request) {
 
-        ex.printStackTrace();
+        log.error("Unexpected error: path={}", request.getRequestURI(), ex);
 
-        ErrorResponse error = new ErrorResponse(
-                request.getRequestURI(),
-                "Internal server error",
-                HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                LocalDateTime.now()
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                buildError("INTERNAL_ERROR", "Internal server error", request)
         );
 
-        return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
+    @ExceptionHandler(InvalidCredentialsException.class)
+    public ResponseEntity<ErrorResponseDTO> handleInvalidCredentials(
+            InvalidCredentialsException ex,
+            HttpServletRequest request) {
+
+        log.warn("INVALID_CREDENTIALS: path={}", request.getRequestURI());
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+                buildError("INVALID_CREDENTIALS", ex.getMessage(), request)
+        );
+    }
+
+    private ErrorResponseDTO buildError(String code, String message, HttpServletRequest request) {
+        return new ErrorResponseDTO(
+                code,
+                message,
+                request.getRequestURI(),
+                LocalDateTime.now()
+        );
+    }
 }

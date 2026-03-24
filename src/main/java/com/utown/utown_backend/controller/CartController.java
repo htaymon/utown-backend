@@ -19,8 +19,6 @@ import java.net.URI;
 public class CartController {
 
     private final CartService service;
-    private final CartRepository cartRepository;
-    private final AuthService authService;
 
     @PostMapping
     @PreAuthorize("hasRole('CLIENT')")

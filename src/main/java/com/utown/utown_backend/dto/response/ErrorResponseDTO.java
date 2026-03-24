@@ -9,8 +9,8 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class ErrorResponseDTO {
 
-    private String path;
+    private String code;
     private String message;
-    private int status;
+    private String path;
     private LocalDateTime timestamp;
 }
