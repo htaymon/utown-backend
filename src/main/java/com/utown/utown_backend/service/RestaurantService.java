@@ -64,7 +64,7 @@ public class RestaurantService {
         log.info("CREATE_RESTAURANT success: restaurantId={}, userId={}",
                 saved.getId(), user.getId());
 
-        return mapper.toResponseDTO(restaurant);
+        return mapper.toResponseDTO(saved);
     }
 
     public List<RestaurantResponseDTO> getAll() {
@@ -73,10 +73,8 @@ public class RestaurantService {
     }
 
     public RestaurantResponseDTO getById(Long id) {
-        log.info("GET_RESTAURANT request: restaurantId={}", id);
         Restaurant restaurant = restaurantRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Restaurant not found with id: " + id));
-        log.info("GET_RESTAURANT success: restaurantId={}", id);
         return mapper.toResponseDTO(restaurant);
     }
 
@@ -93,10 +91,10 @@ public class RestaurantService {
         restaurant.setName(dto.getName());
         restaurant.setDescription(dto.getDescription());
         restaurant.setMinimumOrder(dto.getMinimumOrder());
-        restaurantRepository.save(restaurant);
+        Restaurant saved = restaurantRepository.save(restaurant);
         log.info("UPDATE_RESTAURANT success: restaurantId={}, userId={}",
                 id, user.getId());
-        return mapper.toResponseDTO(restaurant);
+        return mapper.toResponseDTO(saved);
     }
 
     public RestaurantStatusResponseDTO updateRestaurantStatus(
@@ -114,14 +112,14 @@ public class RestaurantService {
 
         restaurant.setStatus(request.getStatus());
 
-        restaurantRepository.save(restaurant);
+        Restaurant saved = restaurantRepository.save(restaurant);
 
         log.info("UPDATE_RESTAURANT_STATUS success: restaurantId={}, status={}",
                 restaurantId, request.getStatus());
 
         return RestaurantStatusResponseDTO.builder()
-                .restaurantId(restaurant.getId())
-                .status(restaurant.getStatus())
+                .restaurantId(saved.getId())
+                .status(saved.getStatus())
                 .build();
     }
 

@@ -6,6 +6,7 @@ import com.utown.utown_backend.entity.Dish;
 import com.utown.utown_backend.entity.DishCategory;
 import com.utown.utown_backend.entity.Restaurant;
 import com.utown.utown_backend.entity.User;
+import com.utown.utown_backend.enums.DishStatus;
 import com.utown.utown_backend.mapper.DishMapper;
 import com.utown.utown_backend.repository.DishCategoryRepository;
 import com.utown.utown_backend.repository.DishRepository;
@@ -13,6 +14,7 @@ import com.utown.utown_backend.repository.RestaurantRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,6 +40,8 @@ public class DishService {
 
         Restaurant restaurant = restaurantRepository.findById(dto.getRestaurantId())
                 .orElseThrow(() -> new EntityNotFoundException("Restaurant not found"));
+
+        checkRestaurantAccess(restaurant, user);
 
         DishCategory category = dishCategoryRepository.findById(dto.getDishCategoryId())
                 .orElseThrow(() -> new EntityNotFoundException("DishCategory not found"));
@@ -71,7 +75,6 @@ public class DishService {
     @Transactional(readOnly = true)
     public DishResponseDTO getById(Long id) {
 
-        log.info("GET_DISH request: dishId={}", id);
         Dish dish = dishRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Dish not found"));
 
@@ -85,8 +88,7 @@ public class DishService {
         Dish dish = dishRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Dish not found"));
 
-        Restaurant restaurant = restaurantRepository.findById(dto.getRestaurantId())
-                .orElseThrow(() -> new EntityNotFoundException("Restaurant not found"));
+        checkRestaurantAccess(dish.getRestaurant(), user);
 
         DishCategory category = dishCategoryRepository.findById(dto.getDishCategoryId())
                 .orElseThrow(() -> new EntityNotFoundException("DishCategory not found"));
@@ -97,7 +99,6 @@ public class DishService {
         dish.setImage(dto.getImage());
         dish.setStatus(dto.getStatus());
         dish.setPriority(dto.getPriority());
-        dish.setRestaurant(restaurant);
         dish.setDishCategory(category);
 
         Dish saved = dishRepository.save(dish);
@@ -110,7 +111,20 @@ public class DishService {
         log.info("DELETE_DISH request: dishId={}, userId={}", id, user.getId());
         Dish dish = dishRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Dish not found"));
-        dishRepository.delete(dish);
+        checkRestaurantAccess(dish.getRestaurant(), user);
+        dish.setStatus(DishStatus.HIDDEN);
+        dishRepository.save(dish);
         log.info("DELETE_DISH success: dishId={}, userId={}", id, user.getId());
+    }
+
+    private void checkRestaurantAccess(Restaurant restaurant, User user) {
+        boolean isOwner = restaurant.getUser().getId().equals(user.getId());
+        boolean isAdmin = user.getRole() != null && "ADMIN".equals(user.getRole().getName());
+
+        if (!isOwner && !isAdmin) {
+            log.warn("RESTAURANT_ACCESS_DENIED: restaurantId={}, userId={}",
+                    restaurant.getId(), user.getId());
+            throw new AccessDeniedException("Access denied");
+        }
     }
 }

@@ -11,7 +11,6 @@ import com.utown.utown_backend.exception.RestaurantClosedException;
 import com.utown.utown_backend.mapper.CartMapper;
 import com.utown.utown_backend.repository.CartRepository;
 import com.utown.utown_backend.repository.RestaurantRepository;
-import com.utown.utown_backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.AccessDeniedException;
@@ -24,7 +23,6 @@ import jakarta.persistence.EntityNotFoundException;
 public class CartService {
 
     private final CartRepository cartRepository;
-    private final UserRepository userRepository;
     private final RestaurantRepository restaurantRepository;
     private final CartMapper mapper;
     private final AuthService authService;
@@ -59,10 +57,9 @@ public class CartService {
     }
 
     public CartResponseDTO getById(Long id) {
-        log.info("GET_CART request: cartId={}", id);
+
         Cart cart = cartRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Cart not found"));
-        log.info("GET_CART success: cartId={}", id);
         return mapper.toResponseDTO(cart);
     }
 
@@ -70,13 +67,8 @@ public class CartService {
 
         User user = authService.getCurrentUser();
 
-        log.info("GET_MY_CART request: userId={}", user.getId());
-
         Cart cart = cartRepository.findByUserId(user.getId())
                 .orElseThrow(() -> new EntityNotFoundException("Cart not found"));
-
-        log.info("GET_MY_CART success: cartId={}, userId={}",
-                cart.getId(), user.getId());
 
         return mapper.toResponseDTO(cart);
     }

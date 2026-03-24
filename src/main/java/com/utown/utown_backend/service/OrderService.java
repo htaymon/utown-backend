@@ -10,7 +10,10 @@ import com.utown.utown_backend.enums.OrderStatus;
 import com.utown.utown_backend.enums.RestaurantStatus;
 import com.utown.utown_backend.exception.*;
 import com.utown.utown_backend.mapper.OrderMapper;
-import com.utown.utown_backend.repository.*;
+import com.utown.utown_backend.repository.AddressRepository;
+import com.utown.utown_backend.repository.CartRepository;
+import com.utown.utown_backend.repository.OrderRepository;
+import com.utown.utown_backend.repository.RestaurantRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -136,10 +139,6 @@ public class OrderService {
     public List<OrderResponseDTO> getRestaurantOrders(Long restaurantId,int page, int size) {
 
         User user = authService.getCurrentUser();
-
-        log.info("FETCH_RESTAURANT_ORDERS: restaurantId={}, userId={}, page={}, size={}",
-                restaurantId, user.getId(), page, size);
-
         Restaurant restaurant = restaurantRepository.findById(restaurantId)
                 .orElseThrow(() -> new EntityNotFoundException("Restaurant not found"));
 
@@ -154,16 +153,10 @@ public class OrderService {
         }
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        List<OrderResponseDTO> result =  orderRepository.findByRestaurantId(restaurantId, pageable)
+        return orderRepository.findByRestaurantId(restaurantId, pageable)
                 .stream()
                 .map(mapper::toResponseDTO)
                 .toList();
-
-        log.info("FETCHED_RESTAURANT_ORDERS: restaurantId={}, count={}",
-                restaurantId, result.size());
-
-        return result;
-
     }
 
     public OrderStatusResponseDTO updateOrderStatus(Long orderId, OrderStatusUpdateDTO request) {
@@ -192,14 +185,14 @@ public class OrderService {
         }
         order.setStatus(request.getStatus());
 
-        orderRepository.save(order);
+        Order saved = orderRepository.save(order);
 
         log.info("UPDATE_ORDER_STATUS success: orderId={}, newStatus={}",
                 orderId, request.getStatus());
 
         return OrderStatusResponseDTO.builder()
-                .orderId(order.getId())
-                .status(order.getStatus())
+                .orderId(saved.getId())
+                .status(saved.getStatus())
                 .build();
     }
 

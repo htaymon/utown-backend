@@ -55,11 +55,11 @@ public class AuthService {
         log.info("REGISTER success: userId={}, email={}",
                 saved.getId(), saved.getEmail());
         return UserResponseDTO.builder()
-                .id(user.getId())
-                .name(user.getName())
-                .email(user.getEmail())
-                .phoneNumber(user.getPhoneNumber())
-                .roleName(user.getRole().getName())
+                .id(saved.getId())
+                .name(saved.getName())
+                .email(saved.getEmail())
+                .phoneNumber(saved.getPhoneNumber())
+                .roleName(saved.getRole().getName())
                 .build();
     }
 
