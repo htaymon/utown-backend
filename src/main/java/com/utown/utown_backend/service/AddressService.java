@@ -6,9 +6,9 @@ import com.utown.utown_backend.entity.Address;
 import com.utown.utown_backend.entity.User;
 import com.utown.utown_backend.mapper.AddressMapper;
 import com.utown.utown_backend.repository.AddressRepository;
-import com.utown.utown_backend.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -36,19 +36,29 @@ public class AddressService {
     }
 
     public List<AddressResponseDTO> getAll() {
-        return mapper.toResponseList(addressRepository.findAll());
+        User user = authService.getCurrentUser();
+        return mapper.toResponseList(addressRepository.findByUserId(user.getId()));
     }
 
     public AddressResponseDTO getById(Long id) {
+        User user = authService.getCurrentUser();
         Address address = addressRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Address not found"));
+        if (!address.getUser().getId().equals(user.getId())) {
+            throw new AccessDeniedException("Access denied");
+        }
         return mapper.toResponseDTO(address);
     }
 
     public AddressResponseDTO update(Long id, AddressRequestDTO dto) {
 
+        User user = authService.getCurrentUser();
         Address address = addressRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Address not found"));
+
+        if (!address.getUser().getId().equals(user.getId())) {
+            throw new AccessDeniedException("Access denied");
+        }
 
         address.setStreet(dto.getStreet());
         address.setCity(dto.getCity());
@@ -59,6 +69,12 @@ public class AddressService {
     }
 
     public void delete(Long id) {
+        User user = authService.getCurrentUser();
+        Address address = addressRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Address not found"));
+        if (!address.getUser().getId().equals(user.getId())) {
+            throw new AccessDeniedException("Access denied");
+        }
         addressRepository.deleteById(id);
     }
 }
