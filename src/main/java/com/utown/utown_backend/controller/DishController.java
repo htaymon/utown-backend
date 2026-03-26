@@ -4,6 +4,7 @@ import com.utown.utown_backend.dto.request.DishRequestDTO;
 import com.utown.utown_backend.dto.response.DishResponseDTO;
 import com.utown.utown_backend.service.DishService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -57,7 +58,9 @@ public class DishController {
             @ApiResponse(responseCode = "404", description = "Dish not found")
     })
     @GetMapping("/{id}")
-    public DishResponseDTO getById(@PathVariable Long id) {
+    public DishResponseDTO getById(
+            @Parameter(description = "Dish ID", example = "1")
+            @PathVariable Long id) {
         return service.getById(id);
     }
 
@@ -71,6 +74,7 @@ public class DishController {
     @PreAuthorize("hasAnyRole('ADMIN','RESTAURANT_ADMIN')")
     @PutMapping("/{id}")
     public DishResponseDTO update(
+            @Parameter(description = "Dish ID to update", example = "1")
             @PathVariable Long id,
             @RequestBody DishRequestDTO dto) {
         return service.update(id, dto);
@@ -85,7 +89,9 @@ public class DishController {
     })
     @PreAuthorize("hasAnyRole('ADMIN','RESTAURANT_ADMIN')")
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(
+            @Parameter(description = "Dish ID to delete", example = "1")
+            @PathVariable Long id) {
 
         service.delete(id);
         return ResponseEntity.noContent().build();

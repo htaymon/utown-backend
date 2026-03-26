@@ -4,6 +4,7 @@ import com.utown.utown_backend.dto.request.CartRequestDTO;
 import com.utown.utown_backend.dto.response.CartResponseDTO;
 import com.utown.utown_backend.service.CartService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -47,7 +48,9 @@ public class CartController {
     })
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','RESTAURANT_ADMIN')")
-    public CartResponseDTO getById(@PathVariable Long id) {
+    public CartResponseDTO getById(
+            @Parameter(description = "Cart ID", example = "1")
+            @PathVariable Long id) {
         return service.getById(id);
     }
 
@@ -73,7 +76,9 @@ public class CartController {
     })
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('CLIENT')")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(
+            @Parameter(description = "Cart ID to delete", example = "1")
+            @PathVariable Long id) {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }

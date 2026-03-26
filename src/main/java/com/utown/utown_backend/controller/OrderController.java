@@ -6,6 +6,7 @@ import com.utown.utown_backend.dto.response.OrderResponseDTO;
 import com.utown.utown_backend.dto.response.OrderStatusResponseDTO;
 import com.utown.utown_backend.service.OrderService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -66,7 +67,9 @@ public class OrderController {
     })
     @PreAuthorize("hasAnyRole('CLIENT','RESTAURANT_ADMIN','ADMIN')")
     @GetMapping("/{id}")
-    public ResponseEntity<OrderResponseDTO> getOrder(@PathVariable Long id) {
+    public ResponseEntity<OrderResponseDTO> getOrder(
+            @Parameter(description = "Order ID", example = "1")
+            @PathVariable Long id) {
         return ResponseEntity.ok(orderService.getOrderDetail(id));
     }
 
@@ -80,6 +83,7 @@ public class OrderController {
     @PreAuthorize("hasAnyRole('RESTAURANT_ADMIN','ADMIN')")
     @GetMapping("/restaurant/{restaurantId}")
     public List<OrderResponseDTO> getRestaurantOrders(
+            @Parameter(description = "Restaurant ID", example = "1")
             @PathVariable Long restaurantId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
@@ -88,7 +92,7 @@ public class OrderController {
     }
 
     @Operation(summary = "Cancel an order",
-            description = "CLIENT can cancel their own PENDING orders")
+            description = "CLIENT can cancel their own PENDING orders.ADMIN and RESTAURANT_ADMIN can cancel any order.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Order cancelled successfully"),
             @ApiResponse(responseCode = "403", description = "Access denied"),
@@ -97,7 +101,9 @@ public class OrderController {
     })
     @PreAuthorize("hasAnyRole('CLIENT','RESTAURANT_ADMIN','ADMIN')")
     @PutMapping("/{id}/cancel")
-    public OrderResponseDTO cancelOrder(@PathVariable Long id) {
+    public OrderResponseDTO cancelOrder(
+            @Parameter(description = "Order ID to cancel", example = "1")
+            @PathVariable Long id) {
         return orderService.cancelOrder(id);
     }
 
@@ -112,6 +118,7 @@ public class OrderController {
     @PreAuthorize("hasAnyRole('ADMIN','RESTAURANT_ADMIN')")
     @PatchMapping("/{id}/status")
     public ResponseEntity<OrderStatusResponseDTO> updateStatus(
+            @Parameter(description = "Order ID to update status", example = "1")
             @PathVariable Long id,
             @RequestBody OrderStatusUpdateDTO request) {
 

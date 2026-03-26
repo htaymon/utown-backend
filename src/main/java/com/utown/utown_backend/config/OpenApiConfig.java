@@ -20,8 +20,6 @@ public class OpenApiConfig {
                         .version("1.0")
                         .description("Food Delivery System API Documentation"))
 
-                .addSecurityItem(new SecurityRequirement().addList("bearerAuth"))
-
                 .components(new Components()
                         .addSecuritySchemes("bearerAuth",
                                 new SecurityScheme()

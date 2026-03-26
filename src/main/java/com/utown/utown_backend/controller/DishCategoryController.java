@@ -4,6 +4,7 @@ import com.utown.utown_backend.dto.request.DishCategoryRequestDTO;
 import com.utown.utown_backend.dto.response.DishCategoryResponseDTO;
 import com.utown.utown_backend.service.DishCategoryService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -56,7 +57,9 @@ public class DishCategoryController {
             @ApiResponse(responseCode = "404", description = "Dish category not found")
     })
     @GetMapping("/{id}")
-    public DishCategoryResponseDTO getById(@PathVariable Long id) {
+    public DishCategoryResponseDTO getById(
+            @Parameter(description = "Dish category ID", example = "1")
+            @PathVariable Long id) {
         return service.getById(id);
     }
 
@@ -69,8 +72,10 @@ public class DishCategoryController {
     })
     @PreAuthorize("hasAnyRole('ADMIN','RESTAURANT_ADMIN')")
     @PutMapping("/{id}")
-    public DishCategoryResponseDTO update(@PathVariable Long id,
-                                          @Valid @RequestBody DishCategoryRequestDTO dto) {
+    public DishCategoryResponseDTO update(
+            @Parameter(description = "Dish category ID to update", example = "1")
+            @PathVariable Long id,
+            @Valid @RequestBody DishCategoryRequestDTO dto) {
         return service.update(id, dto);
     }
 
@@ -83,7 +88,9 @@ public class DishCategoryController {
     })
     @PreAuthorize("hasAnyRole('ADMIN','RESTAURANT_ADMIN')")
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(
+            @Parameter(description = "Dish category ID to delete", example = "1")
+            @PathVariable Long id) {
 
         service.delete(id);
         return ResponseEntity.noContent().build();

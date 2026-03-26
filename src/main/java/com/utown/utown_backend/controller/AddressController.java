@@ -4,6 +4,7 @@ import com.utown.utown_backend.dto.request.AddressRequestDTO;
 import com.utown.utown_backend.dto.response.AddressResponseDTO;
 import com.utown.utown_backend.service.AddressService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -45,6 +46,7 @@ public class AddressController {
             @ApiResponse(responseCode = "200", description = "List of addresses returned"),
             @ApiResponse(responseCode = "403", description = "Access denied")
     })
+    @PreAuthorize("hasRole('CLIENT')")
     @GetMapping
     public List<AddressResponseDTO> getAll() {
         return service.getAll();
@@ -57,8 +59,11 @@ public class AddressController {
             @ApiResponse(responseCode = "404", description = "Address not found"),
             @ApiResponse(responseCode = "403", description = "Access denied")
     })
+    @PreAuthorize("hasRole('CLIENT')")
     @GetMapping("/{id}")
-    public AddressResponseDTO getById(@PathVariable Long id) {
+    public AddressResponseDTO getById(
+            @Parameter(description = "Address ID", example = "1")
+            @PathVariable Long id) {
         return service.getById(id);
     }
 
@@ -73,6 +78,7 @@ public class AddressController {
     @PreAuthorize("hasRole('CLIENT')")
     @PutMapping("/{id}")
     public AddressResponseDTO update(
+            @Parameter(description = "Address ID to update", example = "1")
             @PathVariable Long id,
             @Valid @RequestBody AddressRequestDTO dto) {
         return service.update(id, dto);
@@ -87,7 +93,9 @@ public class AddressController {
     })
     @PreAuthorize("hasRole('CLIENT')")
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(
+            @Parameter(description = "Address ID to delete", example = "1")
+            @PathVariable Long id) {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }

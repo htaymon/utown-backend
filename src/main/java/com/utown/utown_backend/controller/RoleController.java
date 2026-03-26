@@ -4,6 +4,7 @@ import com.utown.utown_backend.dto.request.RoleRequestDTO;
 import com.utown.utown_backend.dto.response.RoleResponseDTO;
 import com.utown.utown_backend.service.RoleService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -60,7 +61,9 @@ public class RoleController {
     })
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/{id}")
-    public ResponseEntity<RoleResponseDTO> getById(@PathVariable Long id) {
+    public ResponseEntity<RoleResponseDTO> getById(
+            @Parameter(description = "Role ID", example = "1")
+            @PathVariable Long id) {
         return ResponseEntity.ok(service.getById(id));
     }
 
@@ -74,6 +77,7 @@ public class RoleController {
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<RoleResponseDTO> update(
+            @Parameter(description = "Role ID to update", example = "1")
             @PathVariable Long id,
             @Valid @RequestBody RoleRequestDTO dto) {
         return ResponseEntity.ok(service.update(id, dto));
@@ -88,7 +92,9 @@ public class RoleController {
     })
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(
+            @Parameter(description = "Role ID to delete", example = "1")
+            @PathVariable Long id) {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }
