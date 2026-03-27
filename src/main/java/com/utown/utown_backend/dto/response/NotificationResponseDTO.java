@@ -3,8 +3,6 @@ package com.utown.utown_backend.dto.response;
 import com.utown.utown_backend.enums.NotificationStatus;
 import lombok.*;
 
-import java.time.LocalDateTime;
-
 @Getter
 @AllArgsConstructor
 @Builder

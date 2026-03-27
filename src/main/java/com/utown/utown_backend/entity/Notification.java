@@ -4,8 +4,6 @@ import com.utown.utown_backend.enums.NotificationStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
-
 @Setter
 @Getter
 @Entity

@@ -6,13 +6,11 @@ import com.utown.utown_backend.entity.Notification;
 import com.utown.utown_backend.entity.User;
 import com.utown.utown_backend.mapper.NotificationMapper;
 import com.utown.utown_backend.repository.NotificationRepository;
-import com.utown.utown_backend.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -21,7 +19,6 @@ import java.util.List;
 public class NotificationService {
 
     private final NotificationRepository repository;
-    private final UserRepository userRepository;
     private final NotificationMapper mapper;
     private final AuthService authService;
 
