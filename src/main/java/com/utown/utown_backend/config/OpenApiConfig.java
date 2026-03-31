@@ -1,5 +1,6 @@
 package com.utown.utown_backend.config;
 
+import io.swagger.v3.oas.models.servers.Server;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
@@ -14,6 +15,9 @@ public class OpenApiConfig {
     public OpenAPI customOpenAPI() {
 
         return new OpenAPI()
+
+                .addServersItem(new Server()
+                        .url("https://utown-backend-production-3238.up.railway.app"))
                 .info(new Info()
                         .title("UTown API")
                         .version("1.0")
