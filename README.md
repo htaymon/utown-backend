@@ -1,81 +1,79 @@
 # UTown Backend
 
-A Spring Boot-based e-commerce backend application that provides secure RESTful APIs for product management, shopping cart operations, order processing, delivery management, and user authentication.
+A Spring Boot REST API for a campus food ordering and delivery platform. Restaurants manage menus and orders, while students browse restaurants, place orders, manage delivery addresses, and track deliveries through a secure JWT-authenticated system.
+
+![Java](https://img.shields.io/badge/Java-17-orange?logo=openjdk)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3-brightgreen?logo=springboot)
+![MySQL](https://img.shields.io/badge/MySQL-8-blue?logo=mysql)
+![Maven](https://img.shields.io/badge/Build-Maven-red?logo=apachemaven)
 
 ---
 
-## Overview
+## Highlights
 
-UTown Backend is designed using a layered architecture to ensure maintainability, scalability, and clean separation of concerns.
+* Designed and implemented 16 REST controllers
+* Built JWT-based authentication and authorization using Spring Security
+* Developed shopping cart and order management workflows
+* Implemented role-based access control for administrators and customers
+* Integrated Swagger/OpenAPI documentation
+* Applied layered architecture (Controller → Service → Repository)
+* Deployed to Railway for public access
 
-The project demonstrates backend engineering skills including:
+---
 
-* REST API development
-* Spring Security implementation
-* Database design and integration
-* DTO and Entity mapping
-* Exception handling
-* Structured logging
-* Software maintenance and debugging
+## Tech Stack
+
+| Category      | Technology                 |
+| ------------- | -------------------------- |
+| Language      | Java 17                    |
+| Framework     | Spring Boot                |
+| Security      | Spring Security, JWT       |
+| Database      | MySQL                      |
+| ORM           | Spring Data JPA, Hibernate |
+| Mapping       | MapStruct                  |
+| Documentation | Swagger / OpenAPI          |
+| Build Tool    | Maven                      |
+| Deployment    | Railway                    |
 
 ---
 
 ## Features
 
-### Authentication & Security
+### Authentication & Authorization
 
-* User Registration
-* User Login
-* Role-Based Authorization
-* Spring Security Configuration
-* Protected REST APIs
+* User registration and login
+* JWT token generation and validation
+* Role-based access control
+* BCrypt password hashing
 
-### Shopping Features
+### Restaurant & Menu Management
 
-* Product Management
-* Shopping Cart Management
-* Cart Item Operations
-* Order Processing
-* Order Status Tracking
-* Delivery Address Management
+* Restaurant management
+* Restaurant categories
+* Dish management
+* Dish categories
+* Dish options and add-ons
 
-### Backend Engineering
+### Cart & Orders
 
-* RESTful API Development
-* DTO Pattern
-* Entity Mapping
-* Input Validation
-* Exception Handling
-* Structured Logging
-* Database Integration
+* Shopping cart management
+* Order creation
+* Order status tracking
+* Order history
+* Ownership validation
 
----
+### Delivery
 
-## Technology Stack
+* Delivery addresses
+* Delivery areas
+* Delivery status tracking
 
-### Backend
+### Administration
 
-* Java 17
-* Spring Boot
-* Spring Security
-* Spring Data JPA
-
-### Database
-
-* MySQL
-
-### API Documentation
-
-* Swagger / OpenAPI
-
-### Build Tool
-
-* Maven
-
-### Version Control
-
-* Git
-* GitHub
+* User management
+* Role management
+* Staff scheduling
+* Notifications
 
 ---
 
@@ -84,19 +82,21 @@ The project demonstrates backend engineering skills including:
 ```text
 Client
    ↓
-Controller
+Controller Layer
    ↓
-Service
+Service Layer
    ↓
-Repository
+Repository Layer
    ↓
 MySQL Database
 ```
 
-### Project Structure
+---
+
+## Project Structure
 
 ```text
-src/main/java
+src/main/java/com/utown/utown_backend
 ├── config
 ├── controller
 ├── dto
@@ -106,109 +106,22 @@ src/main/java
 ├── mapper
 ├── repository
 ├── security
-├── service
-└── UtownBackendApplication
+└── service
 ```
 
 ---
 
 ## API Documentation
 
-Swagger/OpenAPI documentation is available after running the application.
+### Production
 
-### Swagger UI
+**Live API**
 
-```text
-http://localhost:8080/swagger-ui/index.html
-```
+https://utown-backend-production-3238.up.railway.app
 
-### OpenAPI Specification
+**Swagger UI**
 
-```text
-http://localhost:8080/v3/api-docs
-```
-
-Swagger provides:
-
-* API endpoint documentation
-* Request and response examples
-* Parameter descriptions
-* HTTP status codes
-* Interactive API testing
-
----
-
-## Key Modules
-
-### Authentication Module
-
-* User Registration
-* User Login
-* Authorization
-
-### Product Module
-
-* Product Creation
-* Product Update
-* Product Retrieval
-* Product Management
-
-### Cart Module
-
-* Add Item to Cart
-* Update Cart Quantity
-* Remove Cart Item
-* View Cart Details
-
-### Order Module
-
-* Create Order
-* View Order History
-* Update Order Status
-
-### Delivery Module
-
-* Manage Delivery Address
-* Delivery Information Management
-
----
-
-## Error Handling
-
-The application includes centralized exception handling for:
-
-* Validation Errors
-* Resource Not Found Errors
-* Authentication Failures
-* Business Logic Exceptions
-* Internal Server Errors
-
----
-
-## Development Highlights
-
-* Designed and implemented RESTful APIs using Spring Boot
-* Applied layered architecture principles
-* Implemented Spring Security configuration
-* Developed shopping cart and order management modules
-* Performed debugging and defect analysis
-* Improved logging and exception handling
-* Implemented DTO mapping and entity relationships
-* Maintained and enhanced backend services
-
----
-
-## Contributions
-
-Key responsibilities during development:
-
-* Backend feature implementation
-* Functional testing and validation
-* Defect analysis and debugging
-* API development and maintenance
-* Database integration
-* Security configuration
-* Code maintenance and refactoring
+https://utown-backend-production-3238.up.railway.app/swagger-ui/index.html
 
 ---
 
@@ -226,34 +139,165 @@ git clone https://github.com/htaymon/utown-backend.git
 cd utown-backend
 ```
 
-### Build Project
+---
 
-```bash
-mvn clean install
+## Prerequisites
+
+Before running the application, make sure the following software is installed:
+
+* Java 17+
+* Maven 3.9+
+* MySQL 8+
+
+---
+
+## Database Setup
+
+Create a MySQL database:
+
+```sql
+CREATE DATABASE utown;
 ```
 
-### Run Application
+You can use an existing MySQL user or create a dedicated user for the project.
+
+Example:
+
+```sql
+CREATE USER 'utown_user'@'%' IDENTIFIED BY 'your_password';
+GRANT ALL PRIVILEGES ON utown.* TO 'utown_user'@'%';
+FLUSH PRIVILEGES;
+```
+
+---
+
+## Environment Variables
+
+The application uses environment variables to keep sensitive information such as database credentials and JWT secrets out of source control.
+
+Create a `.env` file in the project root using `.env.example` as a template.
+
+Example:
+
+```env
+DATABASE_URL=jdbc:mysql://localhost:3306/utown?user=root&password=your_password&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+
+APP_JWT_SECRET=your-jwt-secret-at-least-32-characters-long
+
+APP_JWT_EXPIRATION_MS=86400000
+
+CORS_ALLOWED_ORIGINS=http://localhost:3000
+```
+
+### Environment Variables Description
+
+| Variable              | Description                                                |
+| --------------------- | ---------------------------------------------------------- |
+| DATABASE_URL          | MySQL database connection URL                              |
+| APP_JWT_SECRET        | Secret key used to sign JWT tokens (minimum 32 characters) |
+| APP_JWT_EXPIRATION_MS | JWT expiration time in milliseconds                        |
+| CORS_ALLOWED_ORIGINS  | Allowed frontend origins                                   |
+
+---
+
+## Running from IntelliJ IDEA
+
+1. Open the project in IntelliJ IDEA.
+2. Open **Run → Edit Configurations**.
+3. Select your Spring Boot configuration.
+4. Add the following environment variables:
+
+```text
+DATABASE_URL=jdbc:mysql://localhost:3306/utown?user=root&password=your_password&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC;
+APP_JWT_SECRET=your-jwt-secret-at-least-32-characters-long;
+APP_JWT_EXPIRATION_MS=86400000;
+CORS_ALLOWED_ORIGINS=http://localhost:3000
+```
+
+5. Save the configuration.
+6. Run the application.
+
+---
+
+## Running from Terminal
+
+Export the required environment variables:
+
+```bash
+export DATABASE_URL="jdbc:mysql://localhost:3306/utown?user=root&password=your_password&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
+
+export APP_JWT_SECRET="your-jwt-secret-at-least-32-characters-long"
+
+export APP_JWT_EXPIRATION_MS=86400000
+
+export CORS_ALLOWED_ORIGINS="http://localhost:3000"
+```
+
+Start the application:
 
 ```bash
 mvn spring-boot:run
 ```
 
-The application will start on:
+---
+
+## Build Project
+
+```bash
+mvn clean install
+```
+
+---
+
+## Run Tests
+
+Before running tests, make sure the same environment variables are available.
+
+```bash
+mvn test
+```
+
+---
+
+## Application URLs
+
+After the application starts successfully:
+
+### API Base URL
 
 ```text
 http://localhost:8080
+```
+
+### Swagger UI
+
+```text
+http://localhost:8080/swagger-ui/index.html
+```
+
+### OpenAPI Specification
+
+```text
+http://localhost:8080/v3/api-docs
 ```
 
 ---
 
 ## Future Improvements
 
-* Docker Deployment
-* Unit Testing with JUnit & Mockito
-* CI/CD using GitHub Actions
-* Redis Caching
-* Payment Gateway Integration
-* Performance Optimization
+* Unit testing with JUnit and Mockito
+* Integration testing with Testcontainers
+* Docker support
+* GitHub Actions CI/CD
+* Redis caching
+* Flyway database migrations
+* Spring Boot Actuator monitoring
+
+---
+
+## License
+
+This project is provided for portfolio and educational purposes.
 
 ---
 
@@ -261,7 +305,6 @@ http://localhost:8080
 
 **Htay Htay Mon**
 
-Backend Developer
+Backend Developer specializing in Java, Spring Boot, and REST API development.
 
-GitHub Repository:
-https://github.com/htaymon/utown-backend
+* GitHub: https://github.com/htaymon

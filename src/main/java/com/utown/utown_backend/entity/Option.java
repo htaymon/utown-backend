@@ -3,6 +3,7 @@ package com.utown.utown_backend.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Setter
@@ -25,8 +26,8 @@ public class Option extends BaseEntity {
     @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false)
-    private Double extraPrice;
+    @Column(nullable = false, precision = 10, scale = 2)
+    private BigDecimal extraPrice;
 
     @OneToMany(mappedBy = "option",
             cascade = CascadeType.ALL,

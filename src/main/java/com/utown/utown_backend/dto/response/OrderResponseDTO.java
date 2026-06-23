@@ -4,6 +4,7 @@ import com.utown.utown_backend.enums.OrderStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Schema(description = "Response object representing an order")
@@ -33,7 +34,7 @@ public class OrderResponseDTO {
     private OrderStatus status;
 
     @Schema(description = "Total price of the order", example = "25.50")
-    private Double totalPrice;
+    private BigDecimal totalPrice;
 
     @Schema(description = "List of order items")
     private List<OrderItemResponseDTO> items;

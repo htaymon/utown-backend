@@ -1,10 +1,12 @@
 # Maven
 target/
+.mvn/
 !.mvn/wrapper/maven-wrapper.jar
 
 # Logs
 *.log
 logs/
+log/
 
 # IntelliJ
 .idea/
@@ -34,3 +36,7 @@ Thumbs.db
 # Temporary
 *.tmp
 *.swp
+
+# Spring Boot
+*.pid
+*.hprof

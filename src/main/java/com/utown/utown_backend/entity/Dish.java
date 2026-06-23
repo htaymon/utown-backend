@@ -4,6 +4,8 @@ import com.utown.utown_backend.enums.DishStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
+
 @Setter
 @Getter
 @Entity
@@ -30,8 +32,8 @@ public class Dish extends BaseEntity {
 
     private String description;
 
-    @Column(nullable = false)
-    private Double price;
+    @Column(nullable = false, precision = 10, scale = 2)
+    private BigDecimal price;
 
     private String image;
 

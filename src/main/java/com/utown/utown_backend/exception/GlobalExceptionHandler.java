@@ -3,6 +3,7 @@ package com.utown.utown_backend.exception;
 import com.utown.utown_backend.dto.response.ErrorResponseDTO;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -160,6 +161,25 @@ public class GlobalExceptionHandler {
                 message,
                 request.getRequestURI(),
                 LocalDateTime.now()
+        );
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ErrorResponseDTO> handleConstraintViolation(
+            ConstraintViolationException ex,
+            HttpServletRequest request) {
+
+        String message = ex.getConstraintViolations()
+                .stream()
+                .map(violation -> violation.getPropertyPath() + ": " + violation.getMessage())
+                .reduce((a, b) -> a + ", " + b)
+                .orElse("Validation error");
+
+        log.warn("Constraint violation: path={}, message={}",
+                request.getRequestURI(), message);
+
+        return ResponseEntity.badRequest().body(
+                buildError("VALIDATION_ERROR", message, request)
         );
     }
 }

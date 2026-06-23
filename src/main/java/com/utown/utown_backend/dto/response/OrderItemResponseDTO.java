@@ -2,6 +2,8 @@ package com.utown.utown_backend.dto.response;
 
 import lombok.*;
 
+import java.math.BigDecimal;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -13,6 +15,6 @@ public class OrderItemResponseDTO {
     private Long dishId;
     private String dishName;
     private Integer quantity;
-    private Double price;
+    private BigDecimal price;
 
 }

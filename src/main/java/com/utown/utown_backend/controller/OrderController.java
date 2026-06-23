@@ -11,6 +11,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -47,13 +49,19 @@ public class OrderController {
             description = "Only CLIENT role can view their own orders")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "List of user's orders returned"),
+            @ApiResponse(responseCode = "400", description = "Invalid page or size parameter"),
             @ApiResponse(responseCode = "403", description = "Access denied")
     })
     @PreAuthorize("hasRole('CLIENT')")
     @GetMapping("/my")
     public List<OrderResponseDTO> getMyOrders(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            @Parameter(description = "Zero-based page index", example = "0")
+            @RequestParam(defaultValue = "0")
+            @Min(value = 0, message = "page must be 0 or greater") int page,
+            @Parameter(description = "Page size (max 100)", example = "10")
+            @RequestParam(defaultValue = "10")
+            @Min(value = 1, message = "size must be at least 1")
+            @Max(value = 100, message = "size must not exceed 100") int size) {
 
         return orderService.getUserOrders(page, size);
     }
@@ -77,6 +85,7 @@ public class OrderController {
             description = "Only RESTAURANT_ADMIN or ADMIN can view orders for a restaurant")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "List of restaurant orders returned"),
+            @ApiResponse(responseCode = "400", description = "Invalid page or size parameter"),
             @ApiResponse(responseCode = "403", description = "Access denied"),
             @ApiResponse(responseCode = "404", description = "Restaurant not found")
     })
@@ -85,11 +94,17 @@ public class OrderController {
     public List<OrderResponseDTO> getRestaurantOrders(
             @Parameter(description = "Restaurant ID", example = "1")
             @PathVariable Long restaurantId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            @Parameter(description = "Zero-based page index", example = "0")
+            @RequestParam(defaultValue = "0")
+            @Min(value = 0, message = "page must be 0 or greater") int page,
+            @Parameter(description = "Page size (max 100)", example = "10")
+            @RequestParam(defaultValue = "10")
+            @Min(value = 1, message = "size must be at least 1")
+            @Max(value = 100, message = "size must not exceed 100") int size) {
 
         return orderService.getRestaurantOrders(restaurantId,page,size);
     }
+
 
     @Operation(summary = "Cancel an order",
             description = "CLIENT can cancel their own PENDING orders.ADMIN and RESTAURANT_ADMIN can cancel any order.")

@@ -24,6 +24,8 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.UUID;
 
@@ -78,11 +80,12 @@ public class OrderService {
             throw new UserAddressMismatchException("Address does not belong to the user");
         }
 
-        double totalPrice = items
-                .stream()
-                .mapToDouble(item ->
-                        item.getDish().getPrice() * item.getQuantity())
-                .sum();
+        BigDecimal totalPrice = items
+                               .stream()
+                               .map(item -> item.getDish().getPrice()
+                                      .multiply(BigDecimal.valueOf(item.getQuantity())))
+                              .reduce(BigDecimal.ZERO, BigDecimal::add)
+                              .setScale(2, RoundingMode.HALF_UP);
 
         Order order = Order.builder()
                 .user(user)

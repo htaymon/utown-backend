@@ -6,6 +6,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
+import java.math.BigDecimal;
+
 @Schema(description = "Request object for creating or updating a dish")
 @Getter
 @Setter
@@ -32,7 +34,7 @@ public class DishRequestDTO {
 
     @Schema(description = "Dish price", example = "12.99")
     @NotNull(message = "Price is required")
-    private Double price;
+    private BigDecimal price;
 
     @Schema(description = "Image URL", example = "https://example.com/dish.jpg")
     @NotNull(message = "Image is required")

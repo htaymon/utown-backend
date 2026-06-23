@@ -4,6 +4,8 @@ import com.utown.utown_backend.enums.DishStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
+import java.math.BigDecimal;
+
 @Schema(description = "Response object representing a dish")
 @Getter
 @AllArgsConstructor
@@ -32,7 +34,7 @@ public class DishResponseDTO {
     private final String description;
 
     @Schema(description = "Dish price", example = "12.99")
-    private final Double price;
+    private final BigDecimal price;
 
     @Schema(description = "Image URL", example = "https://example.com/dish.jpg")
     private final String image;
