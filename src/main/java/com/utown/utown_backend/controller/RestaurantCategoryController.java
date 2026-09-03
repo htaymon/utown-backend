@@ -4,6 +4,7 @@ import com.utown.utown_backend.dto.request.RestaurantCategoryRequestDTO;
 import com.utown.utown_backend.dto.response.RestaurantCategoryResponseDTO;
 import com.utown.utown_backend.service.RestaurantCategoryService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -47,5 +48,51 @@ public class RestaurantCategoryController {
     @GetMapping
     public ResponseEntity<List<RestaurantCategoryResponseDTO>> getAll() {
         return ResponseEntity.ok(service.getAll());
+    }
+
+    @Operation(summary = "Get restaurant category by ID",
+            description = "Accessible by any authenticated user")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Restaurant category details returned"),
+            @ApiResponse(responseCode = "404", description = "Restaurant category not found")
+    })
+    @GetMapping("/{id}")
+    public RestaurantCategoryResponseDTO getById(
+            @Parameter(description = "Restaurant category ID", example = "1")
+            @PathVariable Long id) {
+        return service.getById(id);
+    }
+
+    @Operation(summary = "Update restaurant category",
+            description = "Only ADMIN or RESTAURANT_ADMIN can update restaurant categories")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Restaurant category updated successfully"),
+            @ApiResponse(responseCode = "404", description = "Restaurant category not found"),
+            @ApiResponse(responseCode = "403", description = "Access denied")
+    })
+    @PreAuthorize("hasAnyRole('ADMIN','RESTAURANT_ADMIN')")
+    @PutMapping("/{id}")
+    public RestaurantCategoryResponseDTO update(
+            @Parameter(description = "Restaurant category ID to update", example = "1")
+            @PathVariable Long id,
+            @Valid @RequestBody RestaurantCategoryRequestDTO dto) {
+        return service.update(id, dto);
+    }
+
+    @Operation(summary = "Delete restaurant category",
+            description = "Only ADMIN or RESTAURANT_ADMIN can delete restaurant categories")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Restaurant category deleted successfully"),
+            @ApiResponse(responseCode = "404", description = "Restaurant category not found"),
+            @ApiResponse(responseCode = "403", description = "Access denied")
+    })
+    @PreAuthorize("hasAnyRole('ADMIN','RESTAURANT_ADMIN')")
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(
+            @Parameter(description = "Restaurant category ID to delete", example = "1")
+            @PathVariable Long id) {
+
+        service.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }

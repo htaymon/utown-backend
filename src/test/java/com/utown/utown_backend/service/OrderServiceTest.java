@@ -86,7 +86,7 @@ class OrderServiceTest {
     @Test
     void create_computesTotalPriceAndClearsCart_whenRequestIsValid() {
         when(authService.getCurrentUser()).thenReturn(client);
-        when(cartRepository.findByUserId(10L)).thenReturn(Optional.of(cart));
+        when(cartRepository.findByUserIdForUpdate(10L)).thenReturn(Optional.of(cart));
         when(addressRepository.findById(5L)).thenReturn(Optional.of(address));
         when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -108,7 +108,7 @@ class OrderServiceTest {
     void create_throwsCartEmpty_whenCartHasNoItems() {
         cart.getCartItems().clear();
         when(authService.getCurrentUser()).thenReturn(client);
-        when(cartRepository.findByUserId(10L)).thenReturn(Optional.of(cart));
+        when(cartRepository.findByUserIdForUpdate(10L)).thenReturn(Optional.of(cart));
 
         OrderRequestDTO request = OrderRequestDTO.builder().deliveryAddressId(5L).build();
 
@@ -122,7 +122,7 @@ class OrderServiceTest {
     void create_throwsRestaurantClosed_whenRestaurantIsClosed() {
         restaurant.setStatus(RestaurantStatus.CLOSED);
         when(authService.getCurrentUser()).thenReturn(client);
-        when(cartRepository.findByUserId(10L)).thenReturn(Optional.of(cart));
+        when(cartRepository.findByUserIdForUpdate(10L)).thenReturn(Optional.of(cart));
 
         OrderRequestDTO request = OrderRequestDTO.builder().deliveryAddressId(5L).build();
 
@@ -134,7 +134,7 @@ class OrderServiceTest {
     void create_throwsDishNotAvailable_whenDishIsNotAvailable() {
         dish.setStatus(DishStatus.OUT_OF_STOCK);
         when(authService.getCurrentUser()).thenReturn(client);
-        when(cartRepository.findByUserId(10L)).thenReturn(Optional.of(cart));
+        when(cartRepository.findByUserIdForUpdate(10L)).thenReturn(Optional.of(cart));
 
         OrderRequestDTO request = OrderRequestDTO.builder().deliveryAddressId(5L).build();
 
@@ -148,7 +148,7 @@ class OrderServiceTest {
         address.setUser(otherUser);
 
         when(authService.getCurrentUser()).thenReturn(client);
-        when(cartRepository.findByUserId(10L)).thenReturn(Optional.of(cart));
+        when(cartRepository.findByUserIdForUpdate(10L)).thenReturn(Optional.of(cart));
         when(addressRepository.findById(5L)).thenReturn(Optional.of(address));
 
         OrderRequestDTO request = OrderRequestDTO.builder().deliveryAddressId(5L).build();
@@ -160,7 +160,7 @@ class OrderServiceTest {
     @Test
     void create_throwsEntityNotFound_whenCartIsMissing() {
         when(authService.getCurrentUser()).thenReturn(client);
-        when(cartRepository.findByUserId(10L)).thenReturn(Optional.empty());
+        when(cartRepository.findByUserIdForUpdate(10L)).thenReturn(Optional.empty());
 
         OrderRequestDTO request = OrderRequestDTO.builder().deliveryAddressId(5L).build();
 

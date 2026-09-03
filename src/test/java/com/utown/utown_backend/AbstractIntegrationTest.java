@@ -1,7 +1,6 @@
 package com.utown.utown_backend;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.utown.utown_backend.entity.Role;
 import com.utown.utown_backend.entity.User;
 import com.utown.utown_backend.repository.RoleRepository;
 import com.utown.utown_backend.repository.UserRepository;
@@ -15,13 +14,15 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-
 /**
  * Base for MockMvc integration tests running against the real Spring context
  * with the "test" profile (in-memory H2, no Flyway/Docker required).
  * Each test method runs inside a transaction that is rolled back afterwards,
  * so fixtures created via repositories or HTTP calls never leak between tests.
+ *
+ * Not suitable for real multithreaded concurrency tests (a second thread's own
+ * transaction/connection can't see data this test's still-open transaction hasn't
+ * committed) — see {@link TestSupport} and {@link ConcurrencyIntegrationTest} for that.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @AutoConfigureMockMvc
@@ -47,45 +48,20 @@ public abstract class AbstractIntegrationTest {
     @Autowired
     protected EntityManager entityManager;
 
-    protected static final String RAW_PASSWORD = "Password123!";
+    protected static final String RAW_PASSWORD = TestSupport.RAW_PASSWORD;
 
     @BeforeEach
     void seedRoles() {
-        for (String name : List.of("CLIENT", "RESTAURANT_ADMIN", "ADMIN")) {
-            if (roleRepository.findByName(name).isEmpty()) {
-                roleRepository.save(Role.builder().name(name).build());
-            }
-        }
+        TestSupport.seedRoles(roleRepository);
     }
 
     /** Inserts a user directly with the given role, bypassing the public (CLIENT-only) registration endpoint. */
     protected User createUser(String email, String roleName) {
-        Role role = roleRepository.findByName(roleName)
-                .orElseThrow(() -> new IllegalStateException("Role not seeded: " + roleName));
-
-        User user = User.builder()
-                .name(email)
-                .email(email)
-                .password(passwordEncoder.encode(RAW_PASSWORD))
-                .phoneNumber("0900000000")
-                .role(role)
-                .build();
-
-        return userRepository.save(user);
+        return TestSupport.createUser(userRepository, roleRepository, passwordEncoder, email, roleName);
     }
 
     protected String loginAndGetToken(String email) throws Exception {
-        String body = """
-                {"email":"%s","password":"%s"}
-                """.formatted(email, RAW_PASSWORD);
-
-        String response = mockMvc.perform(
-                        org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post("/auth/login")
-                                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
-                                .content(body))
-                .andReturn().getResponse().getContentAsString();
-
-        return objectMapper.readTree(response).get("token").asText();
+        return TestSupport.loginAndGetToken(mockMvc, objectMapper, email);
     }
 
     /**
