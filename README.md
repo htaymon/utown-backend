@@ -172,7 +172,7 @@ docker compose up --build
 
 - API: `http://localhost:8080`
 - Swagger UI: `http://localhost:8080/swagger-ui/index.html`
-- MySQL is exposed on `localhost:3306` (root / `root1111` by default — override via `.env`, see below)
+- MySQL is available to the app on the Docker Compose network at `mysql:3306` (root / `root1111` by default — override via `.env`, see below)
 
 Stop with `docker compose down` (add `-v` to also drop the MySQL volume and start from a clean database next time).
 
@@ -232,7 +232,7 @@ CI (`.github/workflows/ci.yml`) runs `mvn clean verify` on every push/PR, then b
 
 ## Docker / deployment
 
-- **`Dockerfile`** — multi-stage build (Maven build stage → `eclipse-temurin:17-jre-alpine` runtime), runs as a non-root user, ships only the built jar.
+- **`Dockerfile`** — multi-stage build (Maven build stage → `eclipse-temurin:17-jre` runtime), runs as a non-root user, ships only the built jar.
 - **`docker-compose.yml`** — MySQL 8 + the app, with healthchecks so the app waits for MySQL to actually be ready before starting.
 - **Actuator health check**: `GET /actuator/health` is public (no auth) and used as the container healthcheck — only `health`/`info` are exposed, nothing sensitive.
 
