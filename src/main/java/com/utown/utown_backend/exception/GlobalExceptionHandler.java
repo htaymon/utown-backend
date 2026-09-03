@@ -29,6 +29,7 @@ public class GlobalExceptionHandler {
             DishRestaurantMismatchException.class,
             UserAddressMismatchException.class,
             InvalidOrderStatusException.class,
+            PasswordRequiredException.class,
     })
     public ResponseEntity<ErrorResponseDTO> handleBadRequestExceptions(
             RuntimeException ex,

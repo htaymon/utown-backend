@@ -2,6 +2,7 @@ package com.utown.utown_backend.service;
 
 import com.utown.utown_backend.dto.request.DishRequestDTO;
 import com.utown.utown_backend.dto.response.DishResponseDTO;
+import com.utown.utown_backend.dto.response.PageResponseDTO;
 import com.utown.utown_backend.entity.Dish;
 import com.utown.utown_backend.entity.DishCategory;
 import com.utown.utown_backend.entity.Restaurant;
@@ -11,14 +12,15 @@ import com.utown.utown_backend.mapper.DishMapper;
 import com.utown.utown_backend.repository.DishCategoryRepository;
 import com.utown.utown_backend.repository.DishRepository;
 import com.utown.utown_backend.repository.RestaurantRepository;
+import com.utown.utown_backend.security.RestaurantAccessGuard;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.access.AccessDeniedException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -31,6 +33,7 @@ public class DishService {
     private final DishCategoryRepository dishCategoryRepository;
     private final DishMapper mapper;
     private final AuthService authService;
+    private final RestaurantAccessGuard accessGuard;
 
     public DishResponseDTO create(DishRequestDTO dto) {
 
@@ -41,7 +44,7 @@ public class DishService {
         Restaurant restaurant = restaurantRepository.findById(dto.getRestaurantId())
                 .orElseThrow(() -> new EntityNotFoundException("Restaurant not found"));
 
-        checkRestaurantAccess(restaurant, user);
+        accessGuard.check(restaurant, user);
 
         DishCategory category = dishCategoryRepository.findById(dto.getDishCategoryId())
                 .orElseThrow(() -> new EntityNotFoundException("DishCategory not found"));
@@ -66,10 +69,11 @@ public class DishService {
     }
 
     @Transactional(readOnly = true)
-    public List<DishResponseDTO> getAll() {
-        return mapper.toResponseList(
-                dishRepository.findAll()
-        );
+    public PageResponseDTO<DishResponseDTO> getAll(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<DishResponseDTO> result = dishRepository.findAll(pageable)
+                .map(mapper::toResponseDTO);
+        return PageResponseDTO.from(result);
     }
 
     @Transactional(readOnly = true)
@@ -88,7 +92,7 @@ public class DishService {
         Dish dish = dishRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Dish not found"));
 
-        checkRestaurantAccess(dish.getRestaurant(), user);
+        accessGuard.check(dish.getRestaurant(), user);
 
         DishCategory category = dishCategoryRepository.findById(dto.getDishCategoryId())
                 .orElseThrow(() -> new EntityNotFoundException("DishCategory not found"));
@@ -111,20 +115,9 @@ public class DishService {
         log.info("DELETE_DISH request: dishId={}, userId={}", id, user.getId());
         Dish dish = dishRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Dish not found"));
-        checkRestaurantAccess(dish.getRestaurant(), user);
+        accessGuard.check(dish.getRestaurant(), user);
         dish.setStatus(DishStatus.HIDDEN);
         dishRepository.save(dish);
         log.info("DELETE_DISH success: dishId={}, userId={}", id, user.getId());
-    }
-
-    private void checkRestaurantAccess(Restaurant restaurant, User user) {
-        boolean isOwner = restaurant.getUser().getId().equals(user.getId());
-        boolean isAdmin = user.getRole() != null && "ADMIN".equals(user.getRole().getName());
-
-        if (!isOwner && !isAdmin) {
-            log.warn("RESTAURANT_ACCESS_DENIED: restaurantId={}, userId={}",
-                    restaurant.getId(), user.getId());
-            throw new AccessDeniedException("Access denied");
-        }
     }
 }

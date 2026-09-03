@@ -4,6 +4,7 @@ import com.utown.utown_backend.dto.request.OrderRequestDTO;
 import com.utown.utown_backend.dto.request.OrderStatusUpdateDTO;
 import com.utown.utown_backend.dto.response.OrderResponseDTO;
 import com.utown.utown_backend.dto.response.OrderStatusResponseDTO;
+import com.utown.utown_backend.dto.response.PageResponseDTO;
 import com.utown.utown_backend.entity.*;
 import com.utown.utown_backend.enums.DishStatus;
 import com.utown.utown_backend.enums.OrderStatus;
@@ -17,6 +18,7 @@ import com.utown.utown_backend.repository.RestaurantRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -26,8 +28,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -104,7 +108,7 @@ public class OrderService {
                         .quantity(ci.getQuantity())
                         .price(ci.getDish().getPrice())
                         .build())
-                .toList();
+                .collect(Collectors.toCollection(ArrayList::new));
 
         order.setOrderItems(orderItems);
 
@@ -119,14 +123,13 @@ public class OrderService {
         return mapper.toResponseDTO(savedOrder);
     }
 
-    public List<OrderResponseDTO> getUserOrders(int page, int size) {
+    public PageResponseDTO<OrderResponseDTO> getUserOrders(int page, int size) {
 
         User user = authService.getCurrentUser();
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        return orderRepository.findByUserId(user.getId(), pageable)
-                .stream()
-                .map(mapper::toResponseDTO)
-                .toList();
+        Page<OrderResponseDTO> result = orderRepository.findByUserId(user.getId(), pageable)
+                .map(mapper::toResponseDTO);
+        return PageResponseDTO.from(result);
     }
 
     public OrderResponseDTO getOrderDetail(Long orderId) {
@@ -139,7 +142,7 @@ public class OrderService {
         return mapper.toResponseDTO(order);
     }
 
-    public List<OrderResponseDTO> getRestaurantOrders(Long restaurantId,int page, int size) {
+    public PageResponseDTO<OrderResponseDTO> getRestaurantOrders(Long restaurantId,int page, int size) {
 
         User user = authService.getCurrentUser();
         Restaurant restaurant = restaurantRepository.findById(restaurantId)
@@ -156,10 +159,9 @@ public class OrderService {
         }
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        return orderRepository.findByRestaurantId(restaurantId, pageable)
-                .stream()
-                .map(mapper::toResponseDTO)
-                .toList();
+        Page<OrderResponseDTO> result = orderRepository.findByRestaurantId(restaurantId, pageable)
+                .map(mapper::toResponseDTO);
+        return PageResponseDTO.from(result);
     }
 
     public OrderStatusResponseDTO updateOrderStatus(Long orderId, OrderStatusUpdateDTO request) {

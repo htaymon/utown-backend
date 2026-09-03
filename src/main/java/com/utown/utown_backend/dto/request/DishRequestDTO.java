@@ -2,8 +2,10 @@ package com.utown.utown_backend.dto.request;
 
 import com.utown.utown_backend.enums.DishStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -34,6 +36,7 @@ public class DishRequestDTO {
 
     @Schema(description = "Dish price", example = "12.99")
     @NotNull(message = "Price is required")
+    @DecimalMin(value = "0.0", inclusive = false, message = "Price must be greater than 0")
     private BigDecimal price;
 
     @Schema(description = "Image URL", example = "https://example.com/dish.jpg")
@@ -46,5 +49,6 @@ public class DishRequestDTO {
 
     @Schema(description = "Display priority ", example = "1")
     @NotNull(message = "Priority is required")
+    @PositiveOrZero(message = "Priority must be 0 or greater")
     private Integer priority;
 }

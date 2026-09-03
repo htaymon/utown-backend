@@ -45,6 +45,8 @@ public class RoleService {
     }
 
     public void delete(Long id) {
-        repository.deleteById(id);
+        Role role = repository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Role not found"));
+        repository.delete(role);
     }
 }

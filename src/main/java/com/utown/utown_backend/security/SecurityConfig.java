@@ -21,6 +21,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtFilter;
+    private final JwtAuthenticationEntryPoint authenticationEntryPoint;
 
     @Bean
     public AuthenticationManager authenticationManager(
@@ -39,8 +40,11 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
 
+                .exceptionHandling(ex -> ex.authenticationEntryPoint(authenticationEntryPoint))
+
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**","/swagger-ui/**", "/v3/api-docs/**"
+                        .requestMatchers("/auth/**","/swagger-ui/**", "/v3/api-docs/**",
+                                "/actuator/health/**", "/actuator/info"
                         ).permitAll()
                         .requestMatchers(HttpMethod.GET,
                                 "/restaurants", "/restaurants/*",

@@ -1,5 +1,7 @@
 package com.utown.utown_backend.dto.request;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import java.time.DayOfWeek;
@@ -23,4 +25,10 @@ public class WorkScheduleRequestDTO {
 
     @NotNull(message = "End time is required")
     private LocalTime endTime;
+
+    @AssertTrue(message = "End time must be after start time")
+    @Schema(hidden = true)
+    public boolean isTimeRangeValid() {
+        return startTime == null || endTime == null || endTime.isAfter(startTime);
+    }
 }

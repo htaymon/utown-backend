@@ -1,10 +1,12 @@
 package com.utown.utown_backend.security;
 
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -13,6 +15,7 @@ import java.io.IOException;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtUtil jwtUtil;
     private final CustomUserDetailsService userDetailsService;
@@ -40,16 +43,25 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 String email = jwtUtil.getEmail(token);
 
-                var userDetails = userDetailsService.loadUserByUsername(email);
+                try {
+                    var userDetails = userDetailsService.loadUserByUsername(email);
 
-                var authentication =
-                        new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
-                                userDetails,
-                                null,
-                                userDetails.getAuthorities()
-                        );
+                    var authentication =
+                            new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
+                                    userDetails,
+                                    null,
+                                    userDetails.getAuthorities()
+                            );
 
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                } catch (EntityNotFoundException ex) {
+                    // Token is structurally valid but names a user that no longer exists
+                    // (e.g. deleted after the token was issued). Leave the request
+                    // unauthenticated instead of letting this propagate as an
+                    // uncaught exception; anyRequest().authenticated() + the
+                    // JwtAuthenticationEntryPoint will turn it into a clean 401.
+                    log.warn("JWT references a user that no longer exists: email={}", email);
+                }
             }
         }
 

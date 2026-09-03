@@ -5,6 +5,7 @@
     import com.utown.utown_backend.entity.Role;
     import com.utown.utown_backend.entity.User;
     import com.utown.utown_backend.exception.EmailAlreadyExistsException;
+    import com.utown.utown_backend.exception.PasswordRequiredException;
     import com.utown.utown_backend.mapper.UserMapper;
     import com.utown.utown_backend.repository.RoleRepository;
     import com.utown.utown_backend.repository.UserRepository;
@@ -30,6 +31,9 @@
 
             if (userRepository.existsByEmail(dto.getEmail())) {
                 throw new EmailAlreadyExistsException("Email already exists");
+            }
+            if (dto.getPassword() == null || dto.getPassword().isBlank()) {
+                throw new PasswordRequiredException("Password is required when creating a user");
             }
             Role role = roleRepository.findById(dto.getRoleId())
                     .orElseThrow(() -> new EntityNotFoundException("Role not found"));
@@ -76,6 +80,8 @@
         }
 
         public void delete(Long id) {
-            userRepository.deleteById(id);
+            User user = userRepository.findById(id)
+                    .orElseThrow(() -> new EntityNotFoundException("User not found"));
+            userRepository.delete(user);
         }
     }

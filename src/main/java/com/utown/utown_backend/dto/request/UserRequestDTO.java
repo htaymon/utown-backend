@@ -25,11 +25,10 @@ public class UserRequestDTO {
     private String email;
 
     @Schema(
-            description = "User password",
+            description = "User password. Required when creating a user; leave blank on update to keep the current password.",
             example = "password123",
             format = "password"
     )
-    @NotBlank(message = "Password is required")
     @Size(min = 6, message = "Password must be at least 6 characters")
     private String password;
 

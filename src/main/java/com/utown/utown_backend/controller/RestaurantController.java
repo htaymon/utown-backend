@@ -2,6 +2,7 @@ package com.utown.utown_backend.controller;
 
 import com.utown.utown_backend.dto.request.RestaurantRequestDTO;
 import com.utown.utown_backend.dto.request.RestaurantStatusUpdateDTO;
+import com.utown.utown_backend.dto.response.PageResponseDTO;
 import com.utown.utown_backend.dto.response.RestaurantResponseDTO;
 import com.utown.utown_backend.dto.response.RestaurantStatusResponseDTO;
 import com.utown.utown_backend.service.RestaurantService;
@@ -11,18 +12,21 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
-import java.util.List;
 
 @RestController
 @RequestMapping("/restaurants")
 @RequiredArgsConstructor
 @SecurityRequirement(name = "bearerAuth")
+@Validated
 public class RestaurantController {
 
     private final RestaurantService service;
@@ -43,13 +47,20 @@ public class RestaurantController {
     }
 
     @Operation(summary = "Get all restaurants",
-            description = "Returns a list of all restaurants")
+            description = "Returns a paginated list of all restaurants")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "List of restaurants returned")
+            @ApiResponse(responseCode = "200", description = "Page of restaurants returned")
     })
     @GetMapping
-    public ResponseEntity<List<RestaurantResponseDTO>> getAll() {
-        return ResponseEntity.ok(service.getAll());
+    public PageResponseDTO<RestaurantResponseDTO> getAll(
+            @Parameter(description = "Zero-based page index", example = "0")
+            @RequestParam(defaultValue = "0")
+            @Min(value = 0, message = "page must be 0 or greater") int page,
+            @Parameter(description = "Page size (max 100)", example = "20")
+            @RequestParam(defaultValue = "20")
+            @Min(value = 1, message = "size must be at least 1")
+            @Max(value = 100, message = "size must not exceed 100") int size) {
+        return service.getAll(page, size);
     }
 
     @Operation(summary = "Get restaurant by ID",
@@ -93,7 +104,7 @@ public class RestaurantController {
     public ResponseEntity<RestaurantStatusResponseDTO> updateRestaurantStatus(
             @Parameter(description = "Restaurant ID to update status", example = "1")
             @PathVariable Long id,
-            @RequestBody RestaurantStatusUpdateDTO request) {
+            @Valid @RequestBody RestaurantStatusUpdateDTO request) {
 
         RestaurantStatusResponseDTO response =
                 service.updateRestaurantStatus(id, request);

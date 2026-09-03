@@ -5,10 +5,12 @@ import com.utown.utown_backend.dto.response.OrderItemOptionResponseDTO;
 import com.utown.utown_backend.entity.Option;
 import com.utown.utown_backend.entity.OrderItem;
 import com.utown.utown_backend.entity.OrderItemOption;
+import com.utown.utown_backend.entity.User;
 import com.utown.utown_backend.mapper.OrderItemOptionMapper;
 import com.utown.utown_backend.repository.OptionRepository;
 import com.utown.utown_backend.repository.OrderItemOptionRepository;
 import com.utown.utown_backend.repository.OrderItemRepository;
+import com.utown.utown_backend.security.RestaurantAccessGuard;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -25,11 +27,17 @@ public class OrderItemOptionService {
     private final OrderItemRepository orderItemRepository;
     private final OptionRepository optionRepository;
     private final OrderItemOptionMapper mapper;
+    private final AuthService authService;
+    private final RestaurantAccessGuard accessGuard;
 
     public OrderItemOptionResponseDTO create(OrderItemOptionRequestDTO dto) {
 
+        User user = authService.getCurrentUser();
+
         OrderItem orderItem = orderItemRepository.findById(dto.getOrderItemId())
                 .orElseThrow(() -> new EntityNotFoundException("OrderItem not found"));
+        accessGuard.check(orderItem.getOrder().getRestaurant(), user);
+
         Option option = optionRepository.findById(dto.getOptionId())
                 .orElseThrow(() -> new EntityNotFoundException("Option not found"));
         OrderItemOption entity = new OrderItemOption();
@@ -47,17 +55,27 @@ public class OrderItemOptionService {
     }
 
     public OrderItemOptionResponseDTO getById(Long id) {
+        User user = authService.getCurrentUser();
+
         OrderItemOption entity = repository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("OrderItemOption not found"));
+        accessGuard.check(entity.getOrderItem().getOrder().getRestaurant(), user);
+
         return mapper.toResponseDTO(entity);
     }
 
     public OrderItemOptionResponseDTO update(Long id, OrderItemOptionRequestDTO dto) {
 
+        User user = authService.getCurrentUser();
+
         OrderItemOption entity = repository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("OrderItemOption not found"));
+        accessGuard.check(entity.getOrderItem().getOrder().getRestaurant(), user);
+
         OrderItem orderItem = orderItemRepository.findById(dto.getOrderItemId())
                 .orElseThrow(() -> new EntityNotFoundException("OrderItem not found"));
+        accessGuard.check(orderItem.getOrder().getRestaurant(), user);
+
         Option option = optionRepository.findById(dto.getOptionId())
                 .orElseThrow(() -> new EntityNotFoundException("Option not found"));
 
@@ -69,8 +87,12 @@ public class OrderItemOptionService {
     }
 
     public void delete(Long id) {
+        User user = authService.getCurrentUser();
+
         OrderItemOption entity = repository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("OrderItemOption not found"));
+        accessGuard.check(entity.getOrderItem().getOrder().getRestaurant(), user);
+
         repository.delete(entity);
     }
 }

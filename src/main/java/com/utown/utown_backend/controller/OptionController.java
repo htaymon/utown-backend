@@ -3,9 +3,11 @@ package com.utown.utown_backend.controller;
 import com.utown.utown_backend.dto.request.OptionRequestDTO;
 import com.utown.utown_backend.dto.response.OptionResponseDTO;
 import com.utown.utown_backend.service.OptionService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -14,6 +16,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/options")
 @RequiredArgsConstructor
+@SecurityRequirement(name = "bearerAuth")
 public class OptionController {
 
     private final OptionService service;
@@ -28,6 +31,7 @@ public class OptionController {
         return service.getById(id);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN','RESTAURANT_ADMIN')")
     @PostMapping
     public ResponseEntity<OptionResponseDTO> create(@Valid @RequestBody OptionRequestDTO dto) {
 
@@ -36,6 +40,7 @@ public class OptionController {
         return ResponseEntity.created(location).body(response);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN','RESTAURANT_ADMIN')")
     @PutMapping("/{id}")
     public OptionResponseDTO update(
             @PathVariable Long id,
@@ -43,6 +48,7 @@ public class OptionController {
         return service.update(id, dto);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN','RESTAURANT_ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
 

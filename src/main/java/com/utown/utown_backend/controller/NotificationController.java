@@ -3,9 +3,11 @@ package com.utown.utown_backend.controller;
 import com.utown.utown_backend.dto.request.NotificationRequestDTO;
 import com.utown.utown_backend.dto.response.NotificationResponseDTO;
 import com.utown.utown_backend.service.NotificationService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -14,13 +16,20 @@ import java.util.List;
 @RestController
 @RequestMapping("/notifications")
 @RequiredArgsConstructor
+@SecurityRequirement(name = "bearerAuth")
 public class NotificationController {
 
     private final NotificationService service;
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public List<NotificationResponseDTO> getAll() {
         return service.getAll();
+    }
+
+    @GetMapping("/my")
+    public List<NotificationResponseDTO> getMyNotifications() {
+        return service.getMyNotifications();
     }
 
     @GetMapping("/{id}")

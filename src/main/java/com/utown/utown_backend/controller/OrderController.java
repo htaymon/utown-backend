@@ -4,6 +4,7 @@ import com.utown.utown_backend.dto.request.OrderRequestDTO;
 import com.utown.utown_backend.dto.request.OrderStatusUpdateDTO;
 import com.utown.utown_backend.dto.response.OrderResponseDTO;
 import com.utown.utown_backend.dto.response.OrderStatusResponseDTO;
+import com.utown.utown_backend.dto.response.PageResponseDTO;
 import com.utown.utown_backend.service.OrderService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -16,15 +17,16 @@ import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
-import java.util.List;
 
 @RestController
 @RequestMapping("/orders")
 @RequiredArgsConstructor
 @SecurityRequirement(name = "bearerAuth")
+@Validated
 public class OrderController {
 
     private final OrderService orderService;
@@ -54,7 +56,7 @@ public class OrderController {
     })
     @PreAuthorize("hasRole('CLIENT')")
     @GetMapping("/my")
-    public List<OrderResponseDTO> getMyOrders(
+    public PageResponseDTO<OrderResponseDTO> getMyOrders(
             @Parameter(description = "Zero-based page index", example = "0")
             @RequestParam(defaultValue = "0")
             @Min(value = 0, message = "page must be 0 or greater") int page,
@@ -91,7 +93,7 @@ public class OrderController {
     })
     @PreAuthorize("hasAnyRole('RESTAURANT_ADMIN','ADMIN')")
     @GetMapping("/restaurant/{restaurantId}")
-    public List<OrderResponseDTO> getRestaurantOrders(
+    public PageResponseDTO<OrderResponseDTO> getRestaurantOrders(
             @Parameter(description = "Restaurant ID", example = "1")
             @PathVariable Long restaurantId,
             @Parameter(description = "Zero-based page index", example = "0")
@@ -135,7 +137,7 @@ public class OrderController {
     public ResponseEntity<OrderStatusResponseDTO> updateStatus(
             @Parameter(description = "Order ID to update status", example = "1")
             @PathVariable Long id,
-            @RequestBody OrderStatusUpdateDTO request) {
+            @Valid @RequestBody OrderStatusUpdateDTO request) {
 
         return ResponseEntity.ok(orderService.updateOrderStatus(id,request));
     }

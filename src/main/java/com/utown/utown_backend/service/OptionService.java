@@ -4,9 +4,11 @@ import com.utown.utown_backend.dto.request.OptionRequestDTO;
 import com.utown.utown_backend.dto.response.OptionResponseDTO;
 import com.utown.utown_backend.entity.Dish;
 import com.utown.utown_backend.entity.Option;
+import com.utown.utown_backend.entity.User;
 import com.utown.utown_backend.mapper.OptionMapper;
 import com.utown.utown_backend.repository.DishRepository;
 import com.utown.utown_backend.repository.OptionRepository;
+import com.utown.utown_backend.security.RestaurantAccessGuard;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,11 +24,17 @@ public class OptionService {
     private final OptionRepository optionRepository;
     private final DishRepository dishRepository;
     private final OptionMapper mapper;
+    private final AuthService authService;
+    private final RestaurantAccessGuard accessGuard;
 
     public OptionResponseDTO create(OptionRequestDTO dto) {
 
+        User user = authService.getCurrentUser();
+
         Dish dish = dishRepository.findById(dto.getDishId())
                 .orElseThrow(() -> new EntityNotFoundException("Dish not found"));
+
+        accessGuard.check(dish.getRestaurant(), user);
 
         Option option = mapper.toEntity(dto);
         option.setDish(dish);
@@ -51,10 +59,16 @@ public class OptionService {
     }
 
     public OptionResponseDTO update(Long id, OptionRequestDTO dto) {
+        User user = authService.getCurrentUser();
+
         Option option = optionRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Option not found"));
+        accessGuard.check(option.getDish().getRestaurant(), user);
+
         Dish dish = dishRepository.findById(dto.getDishId())
                 .orElseThrow(() -> new EntityNotFoundException("Dish not found"));
+        accessGuard.check(dish.getRestaurant(), user);
+
         option.setName(dto.getName());
         option.setExtraPrice(dto.getExtraPrice());
         option.setDish(dish);
@@ -65,8 +79,12 @@ public class OptionService {
     }
 
     public void delete(Long id) {
+        User user = authService.getCurrentUser();
+
         Option option = optionRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Option not found"));
+        accessGuard.check(option.getDish().getRestaurant(), user);
+
         optionRepository.delete(option);
     }
 }

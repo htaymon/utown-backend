@@ -2,6 +2,7 @@ package com.utown.utown_backend.controller;
 
 import com.utown.utown_backend.dto.request.DishRequestDTO;
 import com.utown.utown_backend.dto.response.DishResponseDTO;
+import com.utown.utown_backend.dto.response.PageResponseDTO;
 import com.utown.utown_backend.service.DishService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -9,18 +10,21 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
-import java.util.List;
 
 @RestController
 @RequestMapping("/dishes")
 @RequiredArgsConstructor
 @SecurityRequirement(name = "bearerAuth")
+@Validated
 public class DishController {
 
     private final DishService service;
@@ -42,13 +46,20 @@ public class DishController {
     }
 
     @Operation(summary = "Get all dishes",
-            description = "Returns a list of all dishes, accessible to all roles")
+            description = "Returns a paginated list of all dishes, accessible to all roles")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "List of dishes returned successfully")
+            @ApiResponse(responseCode = "200", description = "Page of dishes returned successfully")
     })
     @GetMapping
-    public List<DishResponseDTO> getAll() {
-        return service.getAll();
+    public PageResponseDTO<DishResponseDTO> getAll(
+            @Parameter(description = "Zero-based page index", example = "0")
+            @RequestParam(defaultValue = "0")
+            @Min(value = 0, message = "page must be 0 or greater") int page,
+            @Parameter(description = "Page size (max 100)", example = "20")
+            @RequestParam(defaultValue = "20")
+            @Min(value = 1, message = "size must be at least 1")
+            @Max(value = 100, message = "size must not exceed 100") int size) {
+        return service.getAll(page, size);
     }
 
     @Operation(summary = "Get dish by ID",
@@ -76,7 +87,7 @@ public class DishController {
     public DishResponseDTO update(
             @Parameter(description = "Dish ID to update", example = "1")
             @PathVariable Long id,
-            @RequestBody DishRequestDTO dto) {
+            @Valid @RequestBody DishRequestDTO dto) {
         return service.update(id, dto);
     }
 

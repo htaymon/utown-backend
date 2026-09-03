@@ -2,6 +2,7 @@ package com.utown.utown_backend.service;
 
 import com.utown.utown_backend.dto.request.RestaurantRequestDTO;
 import com.utown.utown_backend.dto.request.RestaurantStatusUpdateDTO;
+import com.utown.utown_backend.dto.response.PageResponseDTO;
 import com.utown.utown_backend.dto.response.RestaurantResponseDTO;
 import com.utown.utown_backend.dto.response.RestaurantStatusResponseDTO;
 import com.utown.utown_backend.entity.Restaurant;
@@ -12,13 +13,14 @@ import com.utown.utown_backend.exception.InvalidRestaurantStatusException;
 import com.utown.utown_backend.mapper.RestaurantMapper;
 import com.utown.utown_backend.repository.RestaurantCategoryRepository;
 import com.utown.utown_backend.repository.RestaurantRepository;
+import com.utown.utown_backend.security.RestaurantAccessGuard;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.access.AccessDeniedException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -29,6 +31,7 @@ public class RestaurantService {
     private final RestaurantCategoryRepository categoryRepository;
     private final RestaurantMapper mapper;
     private final AuthService authService;
+    private final RestaurantAccessGuard accessGuard;
 
     public RestaurantResponseDTO create(RestaurantRequestDTO dto) {
 
@@ -67,9 +70,11 @@ public class RestaurantService {
         return mapper.toResponseDTO(saved);
     }
 
-    public List<RestaurantResponseDTO> getAll() {
-        List<Restaurant> restaurants = restaurantRepository.findAll();
-        return mapper.toResponseList(restaurants);
+    public PageResponseDTO<RestaurantResponseDTO> getAll(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<RestaurantResponseDTO> result = restaurantRepository.findAll(pageable)
+                .map(mapper::toResponseDTO);
+        return PageResponseDTO.from(result);
     }
 
     public RestaurantResponseDTO getById(Long id) {
@@ -86,7 +91,7 @@ public class RestaurantService {
         Restaurant restaurant = restaurantRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Restaurant not found"));
 
-        checkRestaurantAccess(restaurant, user);
+        accessGuard.check(restaurant, user);
 
         restaurant.setName(dto.getName());
         restaurant.setDescription(dto.getDescription());
@@ -108,7 +113,7 @@ public class RestaurantService {
         Restaurant restaurant = restaurantRepository.findById(restaurantId)
                 .orElseThrow(() -> new EntityNotFoundException("Restaurant not found"));
 
-        checkRestaurantAccess(restaurant, user);
+        accessGuard.check(restaurant, user);
 
         restaurant.setStatus(request.getStatus());
 
@@ -131,21 +136,10 @@ public class RestaurantService {
 
         Restaurant restaurant = restaurantRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Restaurant not found"));
-        checkRestaurantAccess(restaurant, user);
+        accessGuard.check(restaurant, user);
 
         restaurantRepository.delete(restaurant);
         log.info("DELETE_RESTAURANT success: restaurantId={}, userId={}",
                 id, user.getId());
-    }
-
-    private void checkRestaurantAccess(Restaurant restaurant, User user) {
-        boolean isOwner = restaurant.getUser().getId().equals(user.getId());
-        boolean isAdmin = user.getRole() != null && "ADMIN".equals(user.getRole().getName());
-
-        if (!isOwner && !isAdmin) {
-            log.warn("RESTAURANT_ACCESS_DENIED: restaurantId={}, userId={}",
-                    restaurant.getId(), user.getId());
-            throw new AccessDeniedException("Access denied");
-        }
     }
 }

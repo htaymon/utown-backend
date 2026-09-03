@@ -3,6 +3,7 @@ package com.utown.utown_backend.dto.request;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.*;
 
 @Schema(description = "Request object for creating or updating a restaurant category")
@@ -23,5 +24,6 @@ public class RestaurantCategoryRequestDTO {
 
     @Schema(description = "Display priority", example = "1")
     @NotNull(message = "Priority is required")
+    @PositiveOrZero(message = "Priority must be 0 or greater")
     private Integer priority;
 }

@@ -12,12 +12,9 @@ import lombok.*;
 @Builder
 public class NotificationRequestDTO {
 
-    @NotNull(message = "User ID is required")
-    private Long userId;
-
     @NotBlank(message = "Message is required")
     private String message;
 
-    @NotBlank(message = "Status is required")
+    @NotNull(message = "Status is required")
     private NotificationStatus status;
 }
