@@ -1,6 +1,4 @@
--- Optional demo data so the API is immediately explorable after a fresh setup.
--- All demo accounts share the password: Demo123!
--- This is local/demo-only data, not a production secret.
+-- Demo data for local development and API exploration.
 
 INSERT INTO users (name, email, password, phone_number, role_id, created_at, updated_at) VALUES
     ('Admin User', 'admin@utown.dev', '$2a$10$jsevDtxp4s8Wn5gvp/R9gO2J6ksBqYujSnSXIXyFupj19NIWr2sYy', '0900000001', (SELECT id FROM roles WHERE name = 'ADMIN'), NOW(6), NOW(6)),

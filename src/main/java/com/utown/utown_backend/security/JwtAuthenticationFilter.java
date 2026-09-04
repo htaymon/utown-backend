@@ -55,11 +55,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                 } catch (EntityNotFoundException ex) {
-                    // Token is structurally valid but names a user that no longer exists
-                    // (e.g. deleted after the token was issued). Leave the request
-                    // unauthenticated instead of letting this propagate as an
-                    // uncaught exception; anyRequest().authenticated() + the
-                    // JwtAuthenticationEntryPoint will turn it into a clean 401.
+                    // Keep the request unauthenticated if the JWT user no longer exists.
                     log.warn("JWT references a user that no longer exists: email={}", email);
                 }
             }

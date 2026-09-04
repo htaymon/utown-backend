@@ -50,9 +50,7 @@ public class OrderService {
 
         User user = authService.getCurrentUser();
 
-        // Locks the cart row so a second concurrent "place order" request (double-click,
-        // client retry) can't read the same items before this one clears them — it will
-        // instead block until this transaction commits, then correctly see an empty cart.
+        // Prevents concurrent requests from creating duplicate orders from the same cart.
         Cart cart = cartRepository.findByUserIdForUpdate(user.getId())
                 .orElseThrow(() -> new EntityNotFoundException("Cart not found"));
 

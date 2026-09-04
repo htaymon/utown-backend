@@ -14,9 +14,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 
 /**
- * Spring Security falls back to a plain, bodiless 403 for anonymous requests
- * unless an entry point is registered. This makes "not authenticated" return
- * 401 with the same JSON error shape the rest of the API uses.
+ * Returns a consistent JSON 401 response for unauthenticated requests.
  */
 @Component
 @RequiredArgsConstructor

@@ -169,9 +169,6 @@
                 </configuration>
             </plugin>
 
-            <!-- Generates a coverage report under target/site/jacoco on every `mvn test`/`verify`.
-                 No coverage threshold/gate is configured: this reports the real number rather
-                 than enforcing an arbitrary one. -->
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>

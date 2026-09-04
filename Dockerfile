@@ -4,8 +4,7 @@ FROM maven:3.9-eclipse-temurin-17 AS build
 
 WORKDIR /build
 
-# Cache dependencies separately from source so code-only changes don't
-# re-download the Maven repository on every rebuild.
+# Cache Maven dependencies separately from source.
 COPY pom.xml .
 RUN mvn -B -q dependency:go-offline
 

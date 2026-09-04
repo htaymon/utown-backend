@@ -40,3 +40,8 @@ Thumbs.db
 # Spring Boot
 *.pid
 *.hprof
+
+# Personal interview preparation
+UTOWN_INTERVIEW_*.md
+UTOWN_INTERVIEW_*.html
+UTOWN_MOCK_INTERVIEW.md
